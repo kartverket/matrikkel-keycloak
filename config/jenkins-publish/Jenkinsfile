@@ -26,12 +26,12 @@ pipeline {
     stages {
         stage('Prepare') {
             steps {
-                sh "./gradlew clean assemble --refresh-dependencies -Dsuffix=${script.params.SUFFIX}"
+                sh "./gradlew clean assemble --refresh-dependencies -Dsuffix=${params.SUFFIX}"
             }
         }
         stage('Publish release') {
             steps {
-                sh "./gradlew publish -Dsuffix=${script.params.SUFFIX}"
+                sh "./gradlew publish -Dsuffix=${params.SUFFIX}"
             }
         }
     }

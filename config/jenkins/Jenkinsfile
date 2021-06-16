@@ -22,13 +22,15 @@ pipeline {
     stages {
         stage('Prepare') {
             steps {
-                sh "./gradlew clean assemble --refresh-dependencies -Dsuffix=-rc-${script.env.BUILD_NUMBER}"
+                sh "./gradlew clean assemble --refresh-dependencies -Dsuffix=-rc-${BUILD_NUMBER}"
             }
         }
         stage('Publish release-candidate') {
-            when { branch 'master' }
+            when {
+                branch 'master'
+            }
             steps {
-                sh "./gradlew publish -Dsuffix=-rc-${script.env.BUILD_NUMBER}"
+                sh "./gradlew publish -Dsuffix=-rc-${BUILD_NUMBER}"
             }
         }
     }
