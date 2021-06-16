@@ -1,0 +1,6 @@
+{
+    "themes": [{
+        "name" : "matrikkelen",
+        "types": [ "login" ]
+    }]
+}

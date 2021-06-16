@@ -1,0 +1,56 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+group = 'no.statkart.matrikkel.keycloak'
+version = '1.0.0' + System.getProperty('suffix', '-SNAPSHOT')
+
+repositories {
+    mavenLocal()
+    maven {
+        url 'https://nexus.statkart.no/repository/public/'
+    }
+}
+
+dependencies {
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:13.0.1')
+    compileOnly 'org.keycloak:keycloak-core'
+    compileOnly 'org.keycloak:keycloak-server-spi'
+    compileOnly 'org.keycloak:keycloak-server-spi-private'
+    compileOnly 'org.keycloak:keycloak-services'
+    compileOnly 'org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec'
+    compileOnly 'org.jboss.logging:jboss-logging'
+    api 'com.cronutils:cron-utils:9.1.5'
+}
+
+compileJava {
+    options.release = 11
+}
+
+task themesJar(type: Jar) {
+    archiveClassifier ='themes'
+    from 'themes'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            artifact themesJar
+        }
+    }
+    repositories {
+        maven {
+            String mavenUpload = System.getenv('MAVEN_PUBLISH')
+            if (mavenUpload) {
+                String creds = mavenUpload.split('@|//')[1]
+                url mavenUpload.replace(creds.concat('@'), '') // url kommer i konsoll - ikke ha credentials der
+                credentials {
+                    username creds.split(':')[0] ?: ""
+                    password creds.split(':')[1] ?: ""
+                }
+            }
+        }
+    }
+}

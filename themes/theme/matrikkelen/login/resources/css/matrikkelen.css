@@ -1,0 +1,17 @@
+.login-pf body {
+    background-image: initial;
+    background-color: var(--pf-global--BackgroundColor--300);
+}
+
+#kc-header {
+    color: #000;
+}
+
+.login-pf-header {
+    background: url("../img/kartverket_logo.png") no-repeat;
+    background-size: contain;
+}
+
+.idporten-logo {
+    content: url("../img/idporten_logo.png");
+}

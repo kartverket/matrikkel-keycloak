@@ -1,0 +1,51 @@
+#!groovy
+
+@Library('common@master') _
+
+pipeline {
+    agent {
+        label 'matrikkelen'
+    }
+
+    tools {
+        jdk 'Java 11 Latest'
+    }
+
+    parameters {
+        string(name: 'SUFFIX', defaultValue: '.0', description: 'Subversjon for bygg.')
+    }
+
+    environment {
+        MAVEN_PUBLISH = credentials('MAVEN_DEPLOY_RELEASES')
+        GRADLE_USER_HOME = "$WORKSPACE/.gradle" // Forhindre samtidighetsproblemer
+        GRADLE_OPTS =
+            '-Dorg.gradle.daemon=false ' +
+            "-Dmaven.repo.local=$WORKSPACE/.m2/repository" // Forhindre samtidighetsproblemer
+    }
+
+    stages {
+        stage('Prepare') {
+            steps {
+                sh "./gradlew clean assemble --refresh-dependencies -Dsuffix=${script.params.SUFFIX}"
+            }
+        }
+        stage('Publish release') {
+            steps {
+                sh "./gradlew publish -Dsuffix=${script.params.SUFFIX}"
+            }
+        }
+    }
+
+    options {
+        buildDiscarder(logRotator(artifactNumToKeepStr: '30', numToKeepStr: '90'))
+        skipStagesAfterUnstable()
+        timeout(time: 60, unit: 'MINUTES')
+        timestamps()
+    }
+
+    post {
+        unsuccessful {
+            pushBuildFeed()
+        }
+    }
+}
