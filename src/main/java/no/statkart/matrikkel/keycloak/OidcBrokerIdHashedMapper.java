@@ -11,11 +11,14 @@ import org.keycloak.broker.provider.IdentityProviderMapper;
 import org.keycloak.models.*;
 import org.keycloak.provider.ProviderConfigProperty;
 
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.security.SecureRandom;
+import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.google.common.base.Preconditions.checkState;
 
 public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
     public static final String PROVIDER_ID = "oidc-broker-id-hashed-mapper";
@@ -23,7 +26,9 @@ public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
     private static final List<ProviderConfigProperty> PROVIDER_CONFIG_PROPERTIES;
     private static final String DEFAULT_CLAIM_NAME = "sub";
     private static final String CLAIM_CONFIG_KEY = "claim";
-    private static final String PEPPER_CONFIG_KEY = "pepper";
+    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final String CONFIG_DIR_KEY = "jboss.server.config.dir";
+    private static volatile  Map<String, byte[]> peppers = new HashMap<>();
 
     static {
         PROVIDER_CONFIG_PROPERTIES = ImmutableList
@@ -34,11 +39,6 @@ public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
                         "Claim",
                         ProviderConfigProperty.STRING_TYPE,
                         null))
-                .add(new ProviderConfigProperty(
-                        PEPPER_CONFIG_KEY,
-                        "Pepper",
-                        "Pepper",
-                        ProviderConfigProperty.STRING_TYPE, null))
                 .build();
     }
 
@@ -85,12 +85,46 @@ public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
     }
 
     private static byte[] getPepper(IdentityProviderMapperModel mapperModel) {
-        String pepperString = mapperModel.getConfig().get(PEPPER_CONFIG_KEY);
+        String alias = mapperModel.getIdentityProviderAlias();
         byte[] pepper;
-        if (pepperString != null && !pepperString.isEmpty()) {
-            pepper = pepperString.getBytes(StandardCharsets.UTF_8);
-        } else {
-            pepper = null;
+
+        lock.readLock().lock();
+        try {
+            pepper = peppers.get(alias);
+        } finally {
+            lock.readLock().unlock();
+        }
+
+        if (pepper == null) {
+            lock.writeLock().lock();
+            try {
+                Properties properties = new Properties();
+                String configDirProperty = System.getProperty(CONFIG_DIR_KEY);
+                checkState(configDirProperty != null && !configDirProperty.trim().isEmpty(), "System property %s is not set", CONFIG_DIR_KEY);
+                File propertyFile = new File(configDirProperty + "/broker-id-hashed.properties");
+                if (propertyFile.isFile()) {
+                    try (FileInputStream fis = new FileInputStream(propertyFile)) {
+                        properties.load(fis);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }
+                if (!properties.containsKey(alias)) {
+                    pepper = new byte[32];
+                    new SecureRandom().nextBytes(pepper);
+                    properties.setProperty(alias, Base64.getUrlEncoder().withoutPadding().encodeToString(pepper));
+                    try (FileOutputStream fos = new FileOutputStream(propertyFile, false)) {
+                        properties.store(fos, null);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }
+                pepper = Base64.getUrlDecoder().decode(properties.getProperty(alias).getBytes(StandardCharsets.ISO_8859_1));
+                checkState(pepper!= null && pepper.length > 8, "Invalid pepper for %s, check %s: too short", alias, configDirProperty + "/broker-id-hashed.properties");
+                peppers.put(alias, pepper);
+            } finally {
+                lock.writeLock().unlock();
+            }
         }
         return pepper;
     }
