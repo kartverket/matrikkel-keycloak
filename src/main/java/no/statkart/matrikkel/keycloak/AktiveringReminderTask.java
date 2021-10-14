@@ -158,7 +158,7 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                 }
                 ExecuteActionsActionToken token = new ExecuteActionsActionToken(
                         user.getId(), Math.toIntExact(Instant.EPOCH.until(leewayExpiresDay.atStartOfDay(TZ).toInstant(), ChronoUnit.SECONDS)),
-                        Arrays.asList("verify-email", "update-password"),
+                        Arrays.asList("VERIFY_EMAIL", "UPDATE_PASSWORD"),
                         null,
                         Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
                 String link = LoginActionsService
