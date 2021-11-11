@@ -68,9 +68,8 @@ public class AktiveringAuthenticator implements Authenticator {
                 .orElse(LocalDate.MAX);
 
         if (today.compareTo(passwordExpires) >= 0) {
-            boolean userRequiresPasswordUpdate = user.getRequiredActionsStream().anyMatch(UserModel.RequiredAction.UPDATE_PASSWORD.name()::equals);
-            boolean passwordUpdateNotAllowed = today.minusDays(PASSWORD_UPDATE_LEEWAY_DAYS).compareTo(passwordExpires) >= 0;
-            if (passwordUpdateNotAllowed || !userRequiresPasswordUpdate) {
+            boolean passwordUpdateNotAllowed = today.compareTo(passwordExpires.plusDays(PASSWORD_UPDATE_LEEWAY_DAYS)) >= 0;
+            if (passwordUpdateNotAllowed) {
                 logger.infov(
                         "Innlogging ({0}) for {1}: Passord ikke fornyet i løpet av 14 dager. Konto må reaktiveres av brukeradmin",
                         flowPath, user.getUsername());

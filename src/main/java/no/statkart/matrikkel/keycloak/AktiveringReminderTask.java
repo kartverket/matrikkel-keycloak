@@ -20,13 +20,13 @@ import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.services.resources.LoginActionsService;
 
 import java.time.DateTimeException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -34,7 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AktiveringReminderTask extends ScheduledTask.Simple {
-    public static final String LAST_SENT_AKTIVERING_REMINDER_ID = "matrikkel.last_sent_aktivering_reminder_id";
+    public static final String SENT_INITIAL_REMINDER_CREATED_AT = "matrikkel.sent_initial_reminder_created_at";
+    public static final String SENT_LAST_REMINDER_CREATED_AT = "matrikkel.sent_last_reminder_created_at";
     public static final String SEND_AKTIVERING_REMINDER = "matrikkel.send_aktivering_reminder";
     private static final Logger log = Logger.getLogger(AktiveringReminderTask.class);
     private static final ZoneId TZ = ZoneId.of("Europe/Oslo");
@@ -104,29 +105,10 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                 }
                 CredentialModel credential = passwords.get(0);
 
-                List<String> sentForPasswordIds = user.getAttributeStream(LAST_SENT_AKTIVERING_REMINDER_ID).collect(Collectors.toList());
-                boolean reminderAlreadySent = sentForPasswordIds
-                        .stream()
-                        .anyMatch(id -> !id.trim().isEmpty() && id.equals(credential.getId()));
-                if (reminderAlreadySent) {
-                    log.debugf("Aktiverings-email skipped for %s in %s realm: Already sent", user.getUsername(), realm.getName());
+                Long passwordCreatedEpochMilli = credential.getCreatedDate();
+                if (passwordCreatedEpochMilli == null) {
+                    log.warnf("Aktiverings-email skipped for %s in % realm: Password has no age", user.getUsername(), realm.getName());
                     return;
-                }
-
-                boolean requiredActionsSet = user
-                        .getRequiredActionsStream()
-                        .flatMap(s -> {
-                            try {
-                                return Stream.of(UserModel.RequiredAction.valueOf(s));
-                            } catch (IllegalArgumentException e) {
-                                return Stream.empty();
-                            }
-                        })
-                        .collect(Collectors.toSet())
-                        .containsAll(EnumSet.of(UserModel.RequiredAction.UPDATE_PASSWORD, UserModel.RequiredAction.VERIFY_EMAIL));
-                if (requiredActionsSet) {
-                    log.infof("Aktiverings-email skipped for %s in % realm: All required actions already set. " +
-                            "Assuming that an email is already sent", user.getUsername(), realm.getName());
                 }
 
                 int daysToExpirePassword = daysToExpirePassword(user).orElse(realmDaysToExpirePassword);
@@ -140,24 +122,61 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                     return;
                 }
 
-                Long passwordCreatedEpochMilli = credential.getCreatedDate();
-                if (passwordCreatedEpochMilli == null) {
-                    log.warnf("Aktiverings-email skipped for %s in % realm: Password has no age", user.getUsername(), realm.getName());
-                    return;
-                }
                 LocalDate passwordCreatedDay = Instant.ofEpochMilli(passwordCreatedEpochMilli).atZone(TZ).toLocalDate();
                 LocalDate passwordExpiresDay = passwordCreatedDay.plusDays(daysToExpirePassword);
-                LocalDate leewayExpiresDay = passwordExpiresDay.plusDays(AktiveringAuthenticator.PASSWORD_UPDATE_LEEWAY_DAYS);
-                if (today.isBefore(passwordExpiresDay) || today.compareTo(leewayExpiresDay) >= 0) {
+                LocalDate passwordReminderSendDay = passwordExpiresDay.minusDays(AktiveringAuthenticator.PASSWORD_UPDATE_LEEWAY_DAYS);
+                LocalDate passwordLeewayExpiresDay = passwordExpiresDay.plusDays(AktiveringAuthenticator.PASSWORD_UPDATE_LEEWAY_DAYS);
+                if (today.isBefore(passwordReminderSendDay)) {
                     log.debugf(
                             "Aktiverings-email skipped for %s in %s realm: " +
-                                    "Password(created: %s) does not expire yet " +
-                                    "(%s), or passed leeway for password update(%s)",
-                            user.getUsername(), realm.getName(), passwordCreatedDay, passwordExpiresDay, leewayExpiresDay);
+                                    "Password(created: %s) does not expire yet(%s). Reminder will be sent %s",
+                            user.getUsername(), realm.getName(), passwordCreatedDay, passwordExpiresDay, passwordReminderSendDay);
+
                     return;
                 }
+                if (today.compareTo(passwordLeewayExpiresDay) >= 0) {
+                    log.debugf(
+                            "Aktiverings-email skipped for %s in %s realm: " +
+                                    "Password(created: %s) has passed leeway for password update(%s)",
+                            user.getUsername(), realm.getName(), passwordCreatedDay, passwordLeewayExpiresDay);
+
+                    return;
+                }
+
+                LocalDate emailExpiresDay;
+                String userAttribute;
+                if (today.isBefore(passwordExpiresDay)) {
+                    userAttribute = SENT_INITIAL_REMINDER_CREATED_AT;
+                    if (getLongUserAttribute(user, userAttribute)
+                            .map(createdAt -> createdAt.equals(passwordCreatedEpochMilli))
+                            .orElse(false))
+                    {
+                        log.debugf(
+                                "Aktiverings-email skipped for %s in %s realm: " +
+                                        "Initial reminder already sent, next reminder will be sent %s",
+                                user.getUsername(), realm.getName(), passwordExpiresDay);
+                        return;
+                    }
+                    emailExpiresDay = passwordExpiresDay;
+                } else {
+                    userAttribute = SENT_LAST_REMINDER_CREATED_AT;
+                    if (getLongUserAttribute(user, userAttribute)
+                            .map(createdAt -> createdAt.equals(passwordCreatedEpochMilli))
+                            .orElse(false))
+                    {
+                        log.debugf(
+                                "Aktiverings-email skipped for %s in %s realm: " +
+                                        "Last reminder already sent, leeway expires %s",
+                                user.getUsername(), realm.getName(), passwordLeewayExpiresDay);
+                        return;
+                    }
+                    user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
+                    user.addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
+                    emailExpiresDay = passwordLeewayExpiresDay;
+                }
+
                 ExecuteActionsActionToken token = new ExecuteActionsActionToken(
-                        user.getId(), Math.toIntExact(Instant.EPOCH.until(leewayExpiresDay.atStartOfDay(TZ).toInstant(), ChronoUnit.SECONDS)),
+                        user.getId(), Math.toIntExact(Instant.EPOCH.until(emailExpiresDay.atStartOfDay(TZ).toInstant(), ChronoUnit.SECONDS)),
                         Arrays.asList("VERIFY_EMAIL", "UPDATE_PASSWORD"),
                         null,
                         Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
@@ -170,23 +189,39 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                         .setAttribute(Constants.TEMPLATE_ATTR_REQUIRED_ACTIONS, token.getRequiredActions())
                         .setRealm(realm)
                         .setUser(user);
+
+                // Expiration truncated til hele dager eller hele timer, for å få bedre
+                // formatering på e-postens utløpstidspunkt.
+                long emailExpirationMinutes = ZonedDateTime.now(TZ).until(emailExpiresDay.atStartOfDay(TZ), ChronoUnit.MINUTES);
+                if (emailExpirationMinutes > 1440L) {
+                    emailExpirationMinutes = (emailExpirationMinutes / 1440L) * 1440L;
+                } else if (emailExpirationMinutes > 60L) {
+                    emailExpirationMinutes = (emailExpirationMinutes / 60L) * 60L;
+                }
+
                 try {
-                    user.addRequiredAction(UserModel.RequiredAction.UPDATE_PASSWORD);
-                    user.addRequiredAction(UserModel.RequiredAction.VERIFY_EMAIL);
-                    emailTemplateProvider.sendExecuteActions(link, Instant.now().until(leewayExpiresDay.atStartOfDay(TZ).toInstant(), ChronoUnit.MINUTES));
-                    ArrayList<String> newSentForPasswordIds = new ArrayList<>(sentForPasswordIds.size());
-                    newSentForPasswordIds.addAll(sentForPasswordIds);
-                    newSentForPasswordIds.add(credential.getId());
-                    user.setAttribute(LAST_SENT_AKTIVERING_REMINDER_ID, newSentForPasswordIds);
+                    emailTemplateProvider.sendExecuteActions(link, emailExpirationMinutes);
+                    user.setSingleAttribute(userAttribute, passwordCreatedEpochMilli.toString());
                     log.infof(
-                            "Aktiverings-email sent to %s in %s realm. Password expired %s, leeway expires %s",
-                            user.getUsername(), realm.getName(), passwordExpiresDay, leewayExpiresDay
+                            "Aktiverings-email sent to %s in %s realm. Password expire %s, leeway expires %s",
+                            user.getUsername(), realm.getName(), passwordExpiresDay, passwordLeewayExpiresDay
                     );
                 } catch (EmailException e) {
                     log.errorf(e, "Unable to send aktiverings reminder to %s in % realm", user.getUsername(), realm.getName());
                 }
 
             });
+        }
+    }
+
+    private static Optional<Long> getLongUserAttribute(UserModel user, String attribute) {
+        String value = user.getFirstAttribute(attribute);
+        try {
+            return Optional.ofNullable(value).map(Long::valueOf);
+        } catch (NumberFormatException e) {
+            log.warnf(e, "%s attribute for user %s is not a number: %s",
+                    SENT_INITIAL_REMINDER_CREATED_AT, user.getUsername(), value);
+            return Optional.empty();
         }
     }
 
