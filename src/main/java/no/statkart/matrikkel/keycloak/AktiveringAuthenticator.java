@@ -6,7 +6,6 @@ import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
@@ -16,8 +15,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 public class AktiveringAuthenticator implements Authenticator {
@@ -31,11 +28,15 @@ public class AktiveringAuthenticator implements Authenticator {
     public void authenticate(AuthenticationFlowContext context) {
         RealmModel realm = context.getRealm();
         UserModel user = context.getUser();
+        String flowPath = context.getFlowPath();
         Instant now = Instant.now();
         LocalDate today = now.atZone(ZoneId.systemDefault()).toLocalDate();
 
         if (now.compareTo(getExpirationDate(user).orElse(Instant.MAX)) >= 0) {
-            logger.infov("Innlogging feilet for {}: Midlertidig bruker gått ut på dato");
+
+            logger.infov(
+                    "Innlogging ({0}) feilet for {1}: Midlertidig bruker gått ut på dato",
+                    flowPath, user.getUsername());
             // Midlertidig bruker har gått ut på dato
             context.failure(AuthenticationFlowError.USER_DISABLED);
             return;
@@ -70,7 +71,9 @@ public class AktiveringAuthenticator implements Authenticator {
             boolean userRequiresPasswordUpdate = user.getRequiredActionsStream().anyMatch(UserModel.RequiredAction.UPDATE_PASSWORD.name()::equals);
             boolean passwordUpdateNotAllowed = today.minusDays(PASSWORD_UPDATE_LEEWAY_DAYS).compareTo(passwordExpires) >= 0;
             if (passwordUpdateNotAllowed || !userRequiresPasswordUpdate) {
-                logger.infov("Innlogging feilet for {}: Passord ikke fornyet i løpet av 14 dager. Konto må reaktiveres av brukeradmin");
+                logger.infov(
+                        "Innlogging ({0}) for {1}: Passord ikke fornyet i løpet av 14 dager. Konto må reaktiveres av brukeradmin",
+                        flowPath, user.getUsername());
                 context.failure(AuthenticationFlowError.CREDENTIAL_SETUP_REQUIRED);
                 return;
             }
