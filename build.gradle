@@ -34,6 +34,10 @@ task themesJar(type: Jar) {
     from 'themes'
 }
 
+assemble {
+    dependsOn themesJar
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
