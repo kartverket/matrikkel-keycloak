@@ -6,6 +6,7 @@ import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
@@ -56,7 +57,7 @@ public class AktiveringAuthenticator implements Authenticator {
             return;
         }
 
-        LocalDate passwordExpires = getUserPasswordExpiresDays(user)
+        LocalDate userPasswordExpires = getUserPasswordExpiresDays(user)
                 .flatMap(passwordExpiresDays -> passwordCreatedOption
                         .flatMap(passwordCreated -> {
                             try {
@@ -66,6 +67,19 @@ public class AktiveringAuthenticator implements Authenticator {
                             }
                         }))
                 .orElse(LocalDate.MAX);
+        LocalDate realmPasswordExpires = getRealmPasswordExpiresDays(realm)
+                .flatMap(passwordExpiresDays -> passwordCreatedOption
+                        .flatMap(passwordCreated -> {
+                            try {
+                                return Optional.of(passwordCreated.plusDays(passwordExpiresDays));
+                            } catch (Exception e) {
+                                return Optional.empty();
+                            }
+                        }))
+                .orElse(LocalDate.MAX);
+        LocalDate passwordExpires = userPasswordExpires.compareTo(realmPasswordExpires) <= 0
+                ? userPasswordExpires
+                : realmPasswordExpires;
 
         if (today.compareTo(passwordExpires) >= 0) {
             boolean passwordUpdateNotAllowed = today.compareTo(passwordExpires.plusDays(PASSWORD_UPDATE_LEEWAY_DAYS)) >= 0;
@@ -129,6 +143,19 @@ public class AktiveringAuthenticator implements Authenticator {
                     }
                 })
                 .min(Long::compareTo);
+    }
+
+    private static Optional<Long> getRealmPasswordExpiresDays(RealmModel realm) {
+        long realmDaysToExpirePassword = 0L;
+        if (realm.getPasswordPolicy().getPolicies().contains(PasswordPolicy.FORCE_EXPIRED_ID)) {
+            realmDaysToExpirePassword = realm.getPasswordPolicy().getDaysToExpirePassword();
+        }
+        if (realmDaysToExpirePassword > 0) {
+            return Optional.of(realmDaysToExpirePassword);
+        } else {
+            return Optional.empty();
+        }
+
     }
 
 }
