@@ -1,1 +1,4 @@
 no.statkart.matrikkel.keycloak.AktiveringAuthenticatorFactory
+no.statkart.matrikkel.keycloak.IdpChooseUsername
+no.statkart.matrikkel.keycloak.ProgramvarebrukerConditionalAuthenticator
+no.statkart.matrikkel.keycloak.MidlertidigBrukerAuthenticator

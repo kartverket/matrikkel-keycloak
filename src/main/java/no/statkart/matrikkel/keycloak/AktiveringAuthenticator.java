@@ -1,5 +1,6 @@
 package no.statkart.matrikkel.keycloak;
 
+import no.statkart.matrikkel.keycloak.util.UserModels;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
@@ -11,7 +12,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
 
-import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -22,7 +22,6 @@ public class AktiveringAuthenticator implements Authenticator {
     private static final Logger logger = Logger.getLogger(AktiveringAuthenticator.class);
     @SuppressWarnings("squid:S2068") // dette er ikke et passord
     public static final String EXPIRE_PASSWORD_DAYS = "matrikkel.expire_password_days";
-    public static final String USER_EXPIRES_AT = "matrikkel.user_expires_at";
     public static final long PASSWORD_UPDATE_LEEWAY_DAYS = 14L;
 
     @Override
@@ -33,8 +32,7 @@ public class AktiveringAuthenticator implements Authenticator {
         Instant now = Instant.now();
         LocalDate today = now.atZone(ZoneId.systemDefault()).toLocalDate();
 
-        if (now.compareTo(getExpirationDate(user).orElse(Instant.MAX)) >= 0) {
-
+        if (now.compareTo(UserModels.getExpirationDate(user).orElse(Instant.MAX)) >= 0) {
             logger.infov(
                     "Innlogging ({0}) feilet for {1}: Midlertidig bruker gått ut på dato",
                     flowPath, user.getUsername());
@@ -118,18 +116,6 @@ public class AktiveringAuthenticator implements Authenticator {
     @Override
     public void close() {
         // trenger ikke å gjøre noe
-    }
-
-    private static Optional<Instant> getExpirationDate(UserModel user) {
-        return user
-                .getAttributeStream(USER_EXPIRES_AT).map(s -> {
-                    try {
-                        return Instant.ofEpochMilli(Long.parseLong(s));
-                    } catch (NumberFormatException | DateTimeException e) {
-                        return Instant.MIN;
-                    }
-                })
-                .min(Instant::compareTo);
     }
 
     private static Optional<Long> getUserPasswordExpiresDays(UserModel user) {

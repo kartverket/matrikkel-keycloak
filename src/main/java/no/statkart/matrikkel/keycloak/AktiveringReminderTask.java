@@ -6,6 +6,7 @@ import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
 import com.cronutils.parser.CronParser;
 import no.statkart.matrikkel.keycloak.scheduler.ScheduledTask;
+import no.statkart.matrikkel.keycloak.util.UserModels;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken;
 import org.keycloak.credential.CredentialModel;
@@ -20,7 +21,6 @@ import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.services.resources.LoginActionsService;
 
 import java.time.DateTimeException;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -37,6 +37,7 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
     public static final String SENT_INITIAL_REMINDER_CREATED_AT = "matrikkel.sent_initial_reminder_created_at";
     public static final String SENT_LAST_REMINDER_CREATED_AT = "matrikkel.sent_last_reminder_created_at";
     public static final String SEND_AKTIVERING_REMINDER = "matrikkel.send_aktivering_reminder";
+    public static final String ONLY_PROGRAMVAREBRUKER = "matrikkel.only_programvarebruker";
     private static final Logger log = Logger.getLogger(AktiveringReminderTask.class);
     private static final ZoneId TZ = ZoneId.of("Europe/Oslo");
     private static final CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
@@ -82,8 +83,13 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                     return;
                 }
 
+                if (realm.getAttribute(ONLY_PROGRAMVAREBRUKER, false) && !UserModels.isProgramvarebruker(user)) {
+                    log.debugf("Aktiverings-email skipped for %s in % realm: User is not a 'programvarebruker'", user.getUsername(), realm.getName());
+                    return;
+                }
+
                 boolean midlertidigUserExpired = user
-                        .getAttributeStream(AktiveringAuthenticator.USER_EXPIRES_AT)
+                        .getAttributeStream(UserModels.USER_EXPIRES_AT)
                         .flatMap(s -> {
                             try {
                                 return Stream.of(Instant.ofEpochMilli(Long.parseLong(s)));
