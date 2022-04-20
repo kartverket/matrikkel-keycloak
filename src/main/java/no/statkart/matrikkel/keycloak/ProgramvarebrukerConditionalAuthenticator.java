@@ -8,6 +8,7 @@ import org.keycloak.authentication.AuthenticationFlowException;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticator;
 import org.keycloak.authentication.authenticators.conditional.ConditionalAuthenticatorFactory;
 import org.keycloak.models.AuthenticationExecutionModel;
+import org.keycloak.models.AuthenticatorConfigModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
@@ -21,8 +22,9 @@ import java.util.Map;
 public class ProgramvarebrukerConditionalAuthenticator implements ConditionalAuthenticator, ConditionalAuthenticatorFactory {
     @Override
     public boolean matchCondition(AuthenticationFlowContext context) {
-        Map<String, String> config = context.getAuthenticatorConfig().getConfig();
-        boolean negateOutput = Boolean.parseBoolean(config.get("not"));
+        AuthenticatorConfigModel configModel = context.getAuthenticatorConfig();
+        Map<String, String> config = configModel != null ? configModel.getConfig() : Collections.emptyMap();
+        boolean negateOutput = Boolean.parseBoolean(config.getOrDefault("not", Boolean.FALSE.toString()));
 
         UserModel user = context.getUser();
         if (user == null) {
