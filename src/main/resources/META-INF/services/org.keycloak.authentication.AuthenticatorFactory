@@ -2,3 +2,6 @@ no.statkart.matrikkel.keycloak.AktiveringAuthenticatorFactory
 no.statkart.matrikkel.keycloak.IdpChooseUsername
 no.statkart.matrikkel.keycloak.ProgramvarebrukerConditionalAuthenticator
 no.statkart.matrikkel.keycloak.MidlertidigBrukerAuthenticator
+no.statkart.matrikkel.keycloak.ClientNetworkConditionalAuthenticator
+no.statkart.matrikkel.keycloak.idp.ErrorHandlingIdentityProviderRedirectorFactory
+no.statkart.matrikkel.keycloak.idp.IdentityProviderSelectorFactory

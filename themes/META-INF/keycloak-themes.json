@@ -1,6 +1,6 @@
 {
     "themes": [{
         "name" : "matrikkelen",
-        "types": [ "login", "email" ]
+        "types": [ "login", "email", "admin" ]
     }]
 }
