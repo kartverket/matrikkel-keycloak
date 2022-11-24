@@ -34,7 +34,7 @@ public class FlowReturningOIDCIdentityProvider extends OIDCIdentityProvider {
 
     protected class FlowReturningOIDCEndpoint extends OIDCEndpoint {
         public FlowReturningOIDCEndpoint(AuthenticationCallback callback, RealmModel realm, EventBuilder event) {
-            super(callback, realm, event);
+            super(callback, realm, event, FlowReturningOIDCIdentityProvider.this);
         }
 
         @Override

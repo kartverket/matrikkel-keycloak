@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = '1.4.0' + System.getProperty('suffix', '-SNAPSHOT')
+version = '1.5.0' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
@@ -14,14 +14,19 @@ repositories {
 }
 
 dependencies {
-    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:13.0.1')
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:21.0.1')
     compileOnly 'org.keycloak:keycloak-core'
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
     compileOnly 'org.keycloak:keycloak-services'
     compileOnly 'org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec'
     compileOnly 'org.jboss.logging:jboss-logging'
-    api 'com.cronutils:cron-utils:9.1.5'
+    compileOnly 'org.keycloak:keycloak-model-legacy-private'
+
+
+    implementation 'org.bouncycastle:bcprov-jdk14:1.72'
+
+    api 'com.cronutils:cron-utils:9.1.8'
 }
 
 compileJava {

@@ -104,7 +104,7 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                     return;
                 }
 
-                List<CredentialModel> passwords = keycloakSession.userCredentialManager().getStoredCredentialsByTypeStream(realm, user, PasswordCredentialModel.TYPE).collect(Collectors.toList());
+                List<CredentialModel> passwords = user.credentialManager().getStoredCredentialsByTypeStream(PasswordCredentialModel.TYPE).collect(Collectors.toList());
                 if (passwords.size() != 1) {
                     log.debugf("Aktiverings-email skipped for %s in %s realm: User has no (or multiple?) password(s)", user.getUsername(), realm.getName(), realm.getName());
                     return;
@@ -213,7 +213,7 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                             user.getUsername(), realm.getName(), passwordExpiresDay, passwordLeewayExpiresDay
                     );
                 } catch (EmailException e) {
-                    log.errorf(e, "Unable to send aktiverings reminder to %s in % realm", user.getUsername(), realm.getName());
+                    log.errorf(e, "Unable to send aktiverings reminder to %s in %s realm", user.getUsername(), realm.getName());
                 }
 
             });

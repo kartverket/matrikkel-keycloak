@@ -41,10 +41,9 @@ public class AktiveringAuthenticator implements Authenticator {
             return;
         }
 
-        Optional<LocalDate> passwordCreatedOption = context
-                .getSession()
-                .userCredentialManager()
-                .getStoredCredentialsByTypeStream(realm, user, PasswordCredentialModel.TYPE)
+        Optional<LocalDate> passwordCreatedOption = user
+                .credentialManager()
+                .getStoredCredentialsByTypeStream(PasswordCredentialModel.TYPE)
                 .map(CredentialModel::getCreatedDate)
                 .map(n -> n != null ? Instant.ofEpochMilli(n) : Instant.ofEpochMilli(Long.MIN_VALUE))
                 .min(Instant::compareTo)

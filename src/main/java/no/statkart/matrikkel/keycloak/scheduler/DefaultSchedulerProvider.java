@@ -2,7 +2,9 @@ package no.statkart.matrikkel.keycloak.scheduler;
 
 import com.cronutils.model.time.ExecutionTime;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.spi.ResteasyUriInfo;
+import org.jboss.resteasy.mock.MockHttpRequest;
+import org.jboss.resteasy.specimpl.ResteasyUriInfo;
+import org.jboss.resteasy.spi.HttpRequest;
 import org.keycloak.Config;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.common.util.Resteasy;
@@ -16,9 +18,6 @@ import org.keycloak.timer.TimerProvider;
 import org.keycloak.urls.HostnameProvider;
 import org.keycloak.urls.UrlType;
 
-import javax.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -36,7 +35,7 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
     private static final String INVALID_HOST = "example.com";
 
     private static final Logger log = Logger.getLogger(DefaultSchedulerProvider.class);
-    private static final ResteasyUriInfo invalidUriInfo = new ResteasyUriInfo("http://" + INVALID_HOST, "", "/invalid");
+    private static final ResteasyUriInfo invalidUriInfo = new ResteasyUriInfo("http://" + INVALID_HOST, "/invalid");
 
     private Instant schedulerStartupTime;
 
@@ -177,37 +176,45 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
 
             log.debugf("Executing %s task for %s realm", id, realm);
             try {
+                Resteasy.pushContext(KeycloakSession.class,session);
+                HostnameProvider hostnameProvider = session.getProvider(HostnameProvider.class);
+                String scheme;
+                try {
+                    scheme = hostnameProvider.getScheme(null, UrlType.FRONTEND);
+                } catch (NullPointerException e) {
+                    scheme = "https";
+                }
+                String hostname;
+                try {
+                    hostname = hostnameProvider.getHostname(null, UrlType.FRONTEND);
+                } catch (NullPointerException e) {
+                    throw new RuntimeException("Frontend url må være konfigurert", e);
+                }
+                int port;
+                try {
+                    port = hostnameProvider.getPort(null, UrlType.FRONTEND);
+                } catch (Exception e) {
+                    port = -1;
+                }
+                String contextPath;
+                try {
+                    contextPath = hostnameProvider.getContextPath(null, UrlType.FRONTEND);
+                } catch (NullPointerException e) {
+                    contextPath = "/";
+                }
+                Resteasy.pushContext(HttpRequest.class, MockHttpRequest.create("POST", String.format("%s://%s%s/%s", scheme, hostname, (port > 0 ? ":" + port : ""), contextPath)));
+
                 KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), taskSession -> {
                     RealmModel taskRealm = taskSession.realms().getRealm(realm.getId());
                     taskSession.getContext().setRealm(taskRealm);
                     taskSession.getContext().setClient(taskRealm.getMasterAdminClient());
-                    HostnameProvider hostnameProvider = taskSession.getProvider(HostnameProvider.class);
-                    URI baseUri;
-                    try {
-                        baseUri = new URI(
-                                hostnameProvider.getScheme(invalidUriInfo, UrlType.FRONTEND),
-                                hostnameProvider.getHostname(invalidUriInfo, UrlType.FRONTEND),
-                                hostnameProvider.getContextPath(invalidUriInfo, UrlType.FRONTEND),
-                                null);
-                        // Gi en litt finere feilmelding enn NPE hvis ikke frontendUrl er konfigurrert
-                        if (INVALID_HOST.equals(baseUri.getHost())) {
-                            throw new IllegalStateException(String.format(
-                                    "%s requires frontEndUrl to be configured for the application server",
-                                    DefaultSchedulerProvider.class.getName()));
-                        }
-                    } catch (URISyntaxException e) {
-                        throw new IllegalStateException(e);
-                    }
-                    try {
-                        Resteasy.pushContext(UriInfo.class, new ResteasyUriInfo(baseUri, URI.create('/' + realm.getName())));
-                        task.accept(taskSession);
-                    } finally {
-                        Resteasy.clearContextData();
-                    }
+                    Resteasy.pushContext(KeycloakSession.class,taskSession);
+                    task.accept(taskSession);
                 });
             } catch (Exception t) {
                 log.errorf(t, "Task %s for %s realm failed", id, realm);
             } finally {
+                Resteasy.clearContextData();
                 // Vi setter siste utført kjøretidspunkt etter tasken er ferdig, slik at tasker bare blir kjørt
                 // én gang hvis de tar lengere tid en cron intervallet
                 KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), txSession -> {
