@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = '1.5.0' + System.getProperty('suffix', '-SNAPSHOT')
+version = '1.7.0' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
@@ -64,3 +64,5 @@ publishing {
         }
     }
 }
+sourceCompatibility = JavaVersion.VERSION_1_9
+targetCompatibility = JavaVersion.VERSION_1_9
