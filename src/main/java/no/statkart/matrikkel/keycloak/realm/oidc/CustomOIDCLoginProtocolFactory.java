@@ -9,9 +9,17 @@ import org.keycloak.protocol.oidc.OIDCProviderConfig;
 
 public class CustomOIDCLoginProtocolFactory extends OIDCLoginProtocolFactory {
 
+    private OIDCProviderConfig providerConfig;
+
     @Override
     public Object createProtocolEndpoint(KeycloakSession session, EventBuilder event) {
-        return new CustomOIDCLoginProtocolService(session, event, new OIDCProviderConfig(Config.scope("")));
+        return new CustomOIDCLoginProtocolService(session, event, providerConfig);
+    }
+
+    @Override
+    public void init(Config.Scope config) {
+        this.providerConfig = new OIDCProviderConfig(config);
+        super.init(config);
     }
 
     /**
@@ -21,6 +29,6 @@ public class CustomOIDCLoginProtocolFactory extends OIDCLoginProtocolFactory {
      */
     @Override
     public int order() {
-        return 100;
+        return 1;
     }
 }
