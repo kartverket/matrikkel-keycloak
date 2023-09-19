@@ -7,15 +7,16 @@ Dette biblioteket inneholder en rekke extensions (providers) og custom themes so
 For å bygge et artifakt som kan inkluderes i keycloak kjør følgende kommando:
 
 ```
-./gradlew shadowJar
+./gradlew assemble
 ```
 
-Resultatet er to artifakter:
+Resultatet er tre artifakter:
 
+* `matrikkel-keycloak-extension-<version>.jar`: Artifakt med alle providers, men uten nødvendige 3. parts avhengigheter
 * `matrikkel-keycloak-extension-<version>-all.jar`: Artifakt med alle providers, inkludert nødvendige 3. parts avhengigheter
 * `matrikkel-keycloak-extension-<version>-themes.jar`: Artifakt med custom themes
 
-Disse to artifaktene må så inkluderes inn i matrikkelen sin keycloak installasjon.
+De to siste artifaktene må så inkluderes inn i matrikkelen sin keycloak installasjon.
 
 ## Providere 
 

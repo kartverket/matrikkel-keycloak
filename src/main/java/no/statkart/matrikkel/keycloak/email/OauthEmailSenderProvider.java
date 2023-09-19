@@ -20,7 +20,7 @@ public class OauthEmailSenderProvider implements EmailSenderProvider {
     private final String userId;
     private final GraphServiceClient<Request> graphServiceClient;
 
-    public OauthEmailSenderProvider(GraphServiceClient<Request> graphServiceClient, String userId, KeycloakSession session) {
+    public OauthEmailSenderProvider(GraphServiceClient<Request> graphServiceClient, String userId) {
         this.graphServiceClient = graphServiceClient;
         this.userId = userId;
         logger.debug("Init OauthEmailSenderProvider");

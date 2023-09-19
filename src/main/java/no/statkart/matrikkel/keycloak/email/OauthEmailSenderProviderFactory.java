@@ -9,8 +9,15 @@ import java.util.Optional;
 
 public class OauthEmailSenderProviderFactory implements EmailSenderProviderFactory {
 
+    private OauthEmailSenderProvider oauthEmailSenderProvider;
+
     @Override
     public EmailSenderProvider create(KeycloakSession session) {
+        return oauthEmailSenderProvider;
+    }
+
+    @Override
+    public void init(org.keycloak.Config.Scope config) {
         OauthConfig oauthConfig = new OauthConfig(
                 readEnvVariable("KEYCLOAK_EMAIL_OAUTH_TENANT_ID"),
                 readEnvVariable("KEYCLOAK_EMAIL_OAUTH_CLIENT_ID"),
@@ -18,21 +25,10 @@ public class OauthEmailSenderProviderFactory implements EmailSenderProviderFacto
                 readEnvVariable("KEYCLOAK_EMAIL_OAUTH_USER_ID")
         );
 
-        return new OauthEmailSenderProvider(
+        oauthEmailSenderProvider = new OauthEmailSenderProvider(
                 GraphServiceClientFactory.create(oauthConfig),
-                oauthConfig.getUserId(),
-                session
+                oauthConfig.getUserId()
         );
-    }
-
-    private static String readEnvVariable(String envVariable) {
-        return Optional.ofNullable(System.getenv(envVariable))
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Could not resolve env variable; %s", envVariable)));
-    }
-
-    @Override
-    public void init(org.keycloak.Config.Scope config) {
-
     }
 
     @Override
@@ -48,5 +44,10 @@ public class OauthEmailSenderProviderFactory implements EmailSenderProviderFacto
     @Override
     public String getId() {
         return "oauth-email-provider";
+    }
+
+    private static String readEnvVariable(String envVariable) {
+        return Optional.ofNullable(System.getenv(envVariable))
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Could not resolve env variable; %s", envVariable)));
     }
 }
