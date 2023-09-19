@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = '1.7.0' + System.getProperty('suffix', '-SNAPSHOT')
+version = '1.8.0' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
