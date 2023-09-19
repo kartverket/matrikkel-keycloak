@@ -1,6 +1,6 @@
 package no.statkart.matrikkel.keycloak.resource;
 
-import javax.ws.rs.Path;
+import jakarta.ws.rs.Path;
 
 public class MatrikkelResource {
 

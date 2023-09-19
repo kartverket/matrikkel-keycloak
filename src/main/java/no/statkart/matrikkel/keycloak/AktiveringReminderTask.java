@@ -26,10 +26,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,16 +72,16 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
         } else {
             realmDaysToExpirePassword = 0;
         }
-        try (Stream<UserModel> allUsers = keycloakSession.users().getUsersStream(realm)) {
+        try (Stream<UserModel> allUsers = keycloakSession.users().searchForUserStream(realm, Collections.emptyMap())) {
             LocalDate today = LocalDate.now(TZ);
             allUsers.forEach(user -> {
                 if (!user.isEnabled()) {
-                    log.debugf("Aktiverings-email skipped for %s in % realm: User not enabled", user.getUsername(), realm.getName());
+                    log.debugf("Aktiverings-email skipped for %s in %s realm: User not enabled", user.getUsername(), realm.getName());
                     return;
                 }
 
                 if (realm.getAttribute(ONLY_PROGRAMVAREBRUKER, false) && !UserModels.isProgramvarebruker(user)) {
-                    log.debugf("Aktiverings-email skipped for %s in % realm: User is not a 'programvarebruker'", user.getUsername(), realm.getName());
+                    log.debugf("Aktiverings-email skipped for %s in %s realm: User is not a 'programvarebruker'", user.getUsername(), realm.getName());
                     return;
                 }
 
@@ -100,7 +97,7 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                         .findAny()
                         .isPresent();
                 if (midlertidigUserExpired) {
-                    log.debugf("Aktiverings-email skipped for %s in % realm: Temporary user", user.getUsername(), realm.getName());
+                    log.debugf("Aktiverings-email skipped for %s in %s realm: Temporary user", user.getUsername(), realm.getName());
                     return;
                 }
 
@@ -113,13 +110,13 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
 
                 Long passwordCreatedEpochMilli = credential.getCreatedDate();
                 if (passwordCreatedEpochMilli == null) {
-                    log.warnf("Aktiverings-email skipped for %s in % realm: Password has no age", user.getUsername(), realm.getName());
+                    log.warnf("Aktiverings-email skipped for %s in %s realm: Password has no age", user.getUsername(), realm.getName());
                     return;
                 }
 
                 int daysToExpirePassword = daysToExpirePassword(user).orElse(realmDaysToExpirePassword);
                 if (daysToExpirePassword <= 0) {
-                    log.debugf("Aktiverings-email skipped for %s in % realm: User's password does not expire", user.getUsername(), realm.getName());
+                    log.debugf("Aktiverings-email skipped for %s in %s realm: User's password does not expire", user.getUsername(), realm.getName());
                     return;
                 }
 
