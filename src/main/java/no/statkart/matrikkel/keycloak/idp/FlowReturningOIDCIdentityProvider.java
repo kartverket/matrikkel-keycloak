@@ -13,8 +13,8 @@ import org.keycloak.services.managers.ClientSessionCode;
 import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * Dette er den vanlige OpenID Connect Identity Provideren, utvidet med

@@ -15,9 +15,9 @@ import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.services.Urls;
 import org.keycloak.services.managers.ClientSessionCode;
 
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;

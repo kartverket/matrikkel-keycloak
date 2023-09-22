@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = '1.8.0' + System.getProperty('suffix', '-SNAPSHOT')
+version = '1.9.0' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
@@ -15,7 +15,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:21.1.2')
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:22.0.3')
     compileOnly 'org.keycloak:keycloak-core'
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
@@ -32,8 +32,8 @@ dependencies {
 }
 
 compileJava {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 task themesJar(type: Jar) {
@@ -70,5 +70,5 @@ publishing {
         }
     }
 }
-sourceCompatibility = JavaVersion.VERSION_1_9
-targetCompatibility = JavaVersion.VERSION_1_9
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
