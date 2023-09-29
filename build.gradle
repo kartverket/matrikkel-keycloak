@@ -9,9 +9,7 @@ version = '1.9.0' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
-    maven {
-        url 'https://nexus.statkart.no/repository/public/'
-    }
+    mavenCentral()
 }
 
 dependencies {
