@@ -27,6 +27,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +36,7 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
     public static final String SENT_LAST_REMINDER_CREATED_AT = "matrikkel.sent_last_reminder_created_at";
     public static final String SEND_AKTIVERING_REMINDER = "matrikkel.send_aktivering_reminder";
     public static final String ONLY_PROGRAMVAREBRUKER = "matrikkel.only_programvarebruker";
+    public static final Pattern SPAM_EPOST = Pattern.compile("^\\s*spam@(.+\\.)?(kartverket|statkart)\\.no\\s*$", Pattern.CASE_INSENSITIVE);
     private static final Logger log = Logger.getLogger(AktiveringReminderTask.class);
     private static final ZoneId TZ = ZoneId.of("Europe/Oslo");
     private static final CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
@@ -122,6 +124,11 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
 
                 if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
                     log.warnf("Aktiverings-email skipped for %s in %s realm: User has no email address", user.getUsername(), realm.getName());
+                    return;
+                }
+
+                if (SPAM_EPOST.matcher(user.getEmail()).matches()) {
+                    log.tracef("Aktiverings-email skipped for %s in %s realm: User has a email address %s", user.getUsername(), realm.getName(), user.getEmail());
                     return;
                 }
 
