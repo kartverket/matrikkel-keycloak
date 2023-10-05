@@ -204,23 +204,46 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
                 }
                 Resteasy.pushContext(HttpRequest.class, MockHttpRequest.create("POST", String.format("%s://%s%s/%s", scheme, hostname, (port > 0 ? ":" + port : ""), contextPath)));
 
-                KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), taskSession -> {
-                    RealmModel taskRealm = taskSession.realms().getRealm(realm.getId());
-                    taskSession.getContext().setRealm(taskRealm);
-                    taskSession.getContext().setClient(taskRealm.getMasterAdminClient());
-                    Resteasy.pushContext(KeycloakSession.class,taskSession);
-                    task.accept(taskSession);
+                // Vi setter siste utført kjøretidspunkt etter tasken er ferdig, slik at tasker bare blir kjørt
+                // én gang hvis de tar lengere tid en cron intervallet
+                Long lastExecTime[] = new Long[1];
+
+
+                KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), txSession -> {
+                    RealmModel taskRealm = txSession.realms().getRealm(realm.getId());
+                    String lastExecTimeString = taskRealm.getAttribute(taskLastExecutionKey);
+                    lastExecTime[0] = Long.valueOf(lastExecTimeString != null ? lastExecTimeString : "0" );
+
+                    taskRealm.setAttribute(taskLastExecutionKey, Instant.now().getEpochSecond());
+                    log.debugf("%s.%s LastExecTime = %s", taskRealm.getName(),taskLastExecutionKey, Instant.from(Instant.ofEpochMilli(lastExecTime[0])));
                 });
+
+
+                try {
+                    KeycloakModelUtils.runJobInTransactionWithTimeout(session.getKeycloakSessionFactory(), taskSession -> {
+                        RealmModel taskRealm = taskSession.realms().getRealm(realm.getId());
+                        taskSession.getContext().setRealm(taskRealm);
+                        taskSession.getContext().setClient(taskRealm.getMasterAdminClient());
+                        Resteasy.pushContext(KeycloakSession.class,taskSession);
+                        task.accept(taskSession);
+                    }, 900);
+                } catch (Exception e) {
+                    try {
+                        KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), txSession -> {
+                            RealmModel taskRealm = txSession.realms().getRealm(realm.getId());
+                            taskRealm.setAttribute(taskLastExecutionKey, lastExecTime[0]);
+                        });
+
+                    } catch (Exception ex) {
+                        e.addSuppressed(ex);
+                    } finally {
+                        throw e;
+                    }
+                }
             } catch (Exception t) {
                 log.errorf(t, "Task %s for %s realm failed", id, realm);
             } finally {
                 Resteasy.clearContextData();
-                // Vi setter siste utført kjøretidspunkt etter tasken er ferdig, slik at tasker bare blir kjørt
-                // én gang hvis de tar lengere tid en cron intervallet
-                KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), txSession -> {
-                    RealmModel taskRealm = txSession.realms().getRealm(realm.getId());
-                    taskRealm.setAttribute(taskLastExecutionKey, Instant.now().getEpochSecond());
-                });
             }
         }
     }
