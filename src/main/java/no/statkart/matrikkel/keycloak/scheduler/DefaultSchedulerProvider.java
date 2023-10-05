@@ -23,8 +23,10 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -209,12 +211,13 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
                 Long lastExecTime[] = new Long[1];
 
 
+                int txTimeout = 900;
                 KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), txSession -> {
                     RealmModel taskRealm = txSession.realms().getRealm(realm.getId());
                     String lastExecTimeString = taskRealm.getAttribute(taskLastExecutionKey);
                     lastExecTime[0] = Long.valueOf(lastExecTimeString != null ? lastExecTimeString : "0" );
 
-                    taskRealm.setAttribute(taskLastExecutionKey, Instant.now().getEpochSecond());
+                    taskRealm.setAttribute(taskLastExecutionKey, Instant.now().plus(txTimeout, ChronoUnit.SECONDS).getEpochSecond());
                     log.debugf("%s.%s LastExecTime = %s", taskRealm.getName(),taskLastExecutionKey, Instant.from(Instant.ofEpochMilli(lastExecTime[0])));
                 });
 
@@ -226,7 +229,7 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
                         taskSession.getContext().setClient(taskRealm.getMasterAdminClient());
                         Resteasy.pushContext(KeycloakSession.class,taskSession);
                         task.accept(taskSession);
-                    }, 900);
+                    }, txTimeout);
                 } catch (Exception e) {
                     try {
                         KeycloakModelUtils.runJobInTransaction(session.getKeycloakSessionFactory(), txSession -> {
