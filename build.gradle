@@ -18,13 +18,14 @@ dependencies {
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
     compileOnly 'org.keycloak:keycloak-services'
+    compileOnly 'org.keycloak:keycloak-model-legacy-private'
     compileOnly 'org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec'
     compileOnly 'org.jboss.logging:jboss-logging'
-    compileOnly 'org.keycloak:keycloak-model-legacy-private'
+    // Benytter keycloak sin versjon av bouncycastle
+    compileOnly 'org.bouncycastle:bcprov-jdk18on:1.76'
 
     implementation "com.azure:azure-identity:1.10.0"
     implementation "com.microsoft.graph:microsoft-graph:5.68.0"
-    implementation 'org.bouncycastle:bcprov-jdk18on:1.76'
 
     api 'com.cronutils:cron-utils:9.1.8'
 }
