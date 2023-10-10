@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = '1.9.1' + System.getProperty('suffix', '-SNAPSHOT')
+version = '1.9.2' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:22.0.3')
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:22.0.4')
     compileOnly 'org.keycloak:keycloak-core'
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
@@ -24,7 +24,7 @@ dependencies {
 
     implementation "com.azure:azure-identity:1.10.0"
     implementation "com.microsoft.graph:microsoft-graph:5.68.0"
-    implementation 'org.bouncycastle:bcprov-jdk14:1.72'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.76'
 
     api 'com.cronutils:cron-utils:9.1.8'
 }
