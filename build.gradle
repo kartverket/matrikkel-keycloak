@@ -5,7 +5,12 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = properties.get('version', '1.0.0')
+ext.with {
+    // Versjonen angis i publish-jobb med GitHub actions
+    projectVersion = properties.get('release_version', '1.0.0')
+}
+
+
 
 repositories {
     mavenLocal()
@@ -46,6 +51,8 @@ shadowJar {
 tasks.assemble {
     dependsOn shadowJar
 }
+
+project.version = "${projectVersion}"
 
 publishing {
     publications {
