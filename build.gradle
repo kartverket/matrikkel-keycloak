@@ -5,12 +5,7 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-ext.with {
-    // Versjonen angis i publish-jobb med GitHub actions
-    projectVersion = properties.get('release_version', '1.0.0')
-}
-
-
+version = '1.9.2' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
