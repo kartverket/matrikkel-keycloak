@@ -64,11 +64,14 @@ publishing {
     }
     repositories {
         maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/kartverket/matrikkel-keycloak-extension")
-            credentials {
-                username = project.findProperty("USERNAME") ?: System.getenv("USERNAME")
-                password = project.findProperty("TOKEN") ?: System.getenv("TOKEN")
+            String mavenUpload = System.getenv('MAVEN_PUBLISH')
+            if (mavenUpload) {
+                String creds = mavenUpload.split('@|//')[1]
+                url mavenUpload.replace(creds.concat('@'), '') // url kommer i konsoll - ikke ha credentials der
+                credentials {
+                    username creds.split(':')[0] ?: ""
+                    password creds.split(':')[1] ?: ""
+                }
             }
         }
     }
