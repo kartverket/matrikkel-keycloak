@@ -41,3 +41,6 @@ Denne provideren må eksplisitt aktiveres ved å legge inn følgende parametere 
 ```
 kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
 ```
+
+## Release artifaktet
+For å deploye en ny release ved bruk av GitHub actions, må du tagge committen som skal releases i formatet x.x.x. Bruk så denne taggen i en ny release i GitHub, så vil workflowen for publish automatisk kjøres.
