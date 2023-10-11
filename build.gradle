@@ -48,8 +48,6 @@ tasks.assemble {
     dependsOn shadowJar
 }
 
-project.version = "${projectVersion}"
-
 publishing {
     publications {
         maven(MavenPublication) {
