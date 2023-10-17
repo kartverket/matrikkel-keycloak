@@ -7,7 +7,6 @@ import okhttp3.Request;
 import org.jboss.logging.Logger;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
-import org.keycloak.models.KeycloakSession;
 
 import java.util.List;
 import java.util.Map;
@@ -28,8 +27,7 @@ public class OauthEmailSenderProvider implements EmailSenderProvider {
 
     @Override
     public void send(Map<String, String> config, String address, String subject, String textBody, String htmlBody) throws EmailException {
-        logger.debugv("Sending email with OauthEmailSenderProvider. address: {0}, subject: {1}, textBody: {2}, htmlBody: {3}",
-                address, subject, textBody, htmlBody);
+        logger.debugv("Sending email with OauthEmailSenderProvider");
 
         try {
             graphServiceClient.users(userId)
