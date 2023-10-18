@@ -5,7 +5,8 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = '1.9.2' + System.getProperty('suffix', '-SNAPSHOT')
+
+project.version = "1.0"
 
 repositories {
     mavenLocal()
@@ -48,26 +49,5 @@ tasks.assemble {
     dependsOn shadowJar
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-            artifact themesJar
-        }
-    }
-    repositories {
-        maven {
-            String mavenUpload = System.getenv('MAVEN_PUBLISH')
-            if (mavenUpload) {
-                String creds = mavenUpload.split('@|//')[1]
-                url mavenUpload.replace(creds.concat('@'), '') // url kommer i konsoll - ikke ha credentials der
-                credentials {
-                    username creds.split(':')[0] ?: ""
-                    password creds.split(':')[1] ?: ""
-                }
-            }
-        }
-    }
-}
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
