@@ -1,0 +1,41 @@
+name: Release and deploy to dev
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    permissions:
+      contents: write
+      packages: write
+      actions: read
+    uses: kartverket/matrikkel-keycloak-extension/.github/workflows/build.yml@main
+    with:
+      push_docker_image: true
+    secrets: inherit
+
+  pharos:
+    name: Run Pharos security scan
+    needs: build
+    permissions:
+      actions: read
+      packages: read
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Run Pharos"
+        uses: kartverket/pharos@v0.1.1
+        with:
+          image_url: ${{ needs.build.outputs.image_url }}
+
+  deploy-dev:
+    needs: [pharos, build]
+    uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
+    with:
+      namespace: matrikkel-keycloak
+      application: matrikkel-keycloak
+      version: ${{ needs.build.outputs.version }}
+      deploy_dev: true
+    secrets:
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN_RW_REPO_PACKAGES }}
