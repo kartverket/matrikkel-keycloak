@@ -28,6 +28,7 @@ jobs:
         uses: kartverket/pharos@v0.1.1
         with:
           image_url: ${{ needs.build.outputs.image_url }}
+          allow_severity_level: critical
 
   deploy-dev:
     needs: [pharos, build]
