@@ -15,18 +15,17 @@ RUN curl -f -L https://github.com/aerogear/keycloak-metrics-spi/releases/downloa
 
 FROM quay.io/keycloak/keycloak:22.0.4 as keycloak-builder
 
-ENV KC_HEALTH_ENABLED=true
-ENV KC_METRICS_ENABLED=true
-ENV KC_HTTP_RELATIVE_PATH='/auth'
-
 ARG KC_DB=oracle
-ENV KC_DB=$KC_DB
+ENV KC_DB=$KC_DB \
+    KC_HEALTH_ENABLED=true \
+    KC_METRICS_ENABLED=true \
+    KC_HTTP_RELATIVE_PATH='/auth'
 
 WORKDIR /opt/keycloak
 
 # Copy and install providers
-COPY --from=extensions-builder --chown=keycloak:keycloak /extensions/build/libs/matrikkel-keycloak-extension-*-all.jar /opt/keycloak/providers/matrikkel-keycloak-extension.jar
-COPY --from=extensions-builder --chown=keycloak:keycloak /extensions/build/libs/matrikkel-keycloak-extension-*-themes.jar /opt/keycloak/providers/themes.jar
+COPY --from=extensions-builder --chown=keycloak:keycloak /extensions/build/libs/matrikkel-keycloak-extension-all.jar /opt/keycloak/providers/matrikkel-keycloak-extension.jar
+COPY --from=extensions-builder --chown=keycloak:keycloak /extensions/build/libs/matrikkel-keycloak-extension-themes.jar /opt/keycloak/providers/themes.jar
 COPY --from=metrics-spi-builder --chown=keycloak:keycloak /tmp/keycloak-metrics-spi.jar /opt/keycloak/providers/keycloak-metrics-spi.jar
 
 RUN /opt/keycloak/bin/kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
@@ -36,7 +35,7 @@ FROM quay.io/keycloak/keycloak:22.0.4
 COPY --from=keycloak-builder --chown=150:150 /opt/keycloak/ /opt/keycloak/
 
 ARG KC_DB=oracle
-ENV KC_DB=$KC_DB
-ENV TZ=Europe/Oslo
+ENV KC_DB=$KC_DB \
+    TZ=Europe/Oslo
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
