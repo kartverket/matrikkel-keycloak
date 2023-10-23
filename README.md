@@ -15,15 +15,18 @@ Når dette docker imaget bygges, blir også de custom extensions bygget i tilleg
 
 ## Bygging og kjøring lokalt
 
-For å teste ting lokalt er det enkleste å bygge med docker compose. Da bygges det med en lokal minne-database
+For å teste ting lokalt er det enkleste å bygge med docker compose.
+Som standard bygges Keycloak med `KC_DB=dev-mem` som betyr at man benytter en in-memory database. Hvis man ønsker å benytte en annen database lokalt
+kan man endre `KC_DB` variabelen i [docker-compose.yml](docker-compose.yml) til ønsket database. 
+Se også keycloak sin egen [dokumentasjon](https://www.keycloak.org/server/all-config#category-database).
 
-```
+```shell
 docker compose build
 ```
 
 For å kjøre opp keycloak lokalt kan man benytte:
 
-```
+```shell
 docker compose up
 ```
 
@@ -31,13 +34,18 @@ Som default benytter man konfigurasjon fra filen [local.env](local.env). Disse k
 
 ## Release
 
-TODO: Hvordan release ny versjon av keycloak
+Det bygges automatisk en ny release ved push til `main`. Under bygging skjer følgende:
 
-## Bygging og extenions
+1. Ny versjon beregnes automatisk basert på forrige tag og de nyeste commit-meldingene.
+  Det benyttes en action [mathieudutour/github-tag-action](https://github.com/mathieudutour/github-tag-action) for dette. Se dens dokumentasjon for hvordan man kan overstyre/tilpasse versjonsnummer. 
+2. Commit-en som blir bygget blir tag-et med med versjonnummeret fra 1. og et docker image med samme tag blir blir pushet.  
+3. Docker image blir deployet til dev (via ArgoCD) og dette bygget kan videre promoteres til test og produksjon ved hjelp [promote app](https://github.com/kartverket/heimdall-apps/actions/workflows/promote-app.yml)
+
+## Bygging og extensions
 
 Extensions blir bygget når man bygger keycloak, men hvis man ønsker kan man bygge disse direkte med gradle:
 
-```
+```shell
 cd extensions
 ./gradlew assemble
 ```
@@ -70,7 +78,7 @@ KEYCLOAK_EMAIL_OAUTH_USER_ID
 
 Denne provideren må eksplisitt aktiveres ved å legge inn følgende parametere til `kc.sh build`:
 
-```
+```shell
 kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
 ```
 
