@@ -6,8 +6,6 @@ plugins {
 
 group = 'no.statkart.matrikkel.keycloak'
 
-project.version = "1.0"
-
 repositories {
     mavenLocal()
     mavenCentral()
