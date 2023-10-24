@@ -1,5 +1,5 @@
 # Build matrikkel extensions
-FROM eclipse-temurin:17-jdk-jammy AS extensions-builder
+FROM eclipse-temurin:21-jdk-jammy AS extensions-builder
 
 COPY ./extensions ./extensions
 WORKDIR ./extensions
