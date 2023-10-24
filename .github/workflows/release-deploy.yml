@@ -8,8 +8,9 @@ jobs:
     permissions:
       contents: write
       packages: write
+      security-events: write
       actions: read
-    uses: kartverket/matrikkel-keycloak-extension/.github/workflows/build.yml@main
+    uses: ./.github/workflows/build.yml
     with:
       push_docker_image: true
     secrets: inherit
