@@ -16,7 +16,7 @@ Når dette docker imaget bygges, blir også de custom extensions bygget i tilleg
 ## Bygging og kjøring lokalt
 
 For å teste ting lokalt er det enkleste å bygge med docker compose.
-Som standard bygges Keycloak med `KC_DB=dev-mem` som betyr at man benytter en in-memory database. Hvis man ønsker å benytte en annen database lokalt
+Som standard bygges Keycloak lokalt med `KC_DB=dev-mem` som betyr at man benytter en in-memory database. Hvis man ønsker å benytte en annen database lokalt
 kan man endre `KC_DB` variabelen i [docker-compose.yml](docker-compose.yml) til ønsket database. 
 Se også keycloak sin egen [dokumentasjon](https://www.keycloak.org/server/all-config#category-database).
 
