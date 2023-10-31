@@ -26,7 +26,7 @@ dependencies {
     implementation "com.azure:azure-identity:1.10.4"
     implementation "com.microsoft.graph:microsoft-graph:5.75.0"
 
-    api 'com.cronutils:cron-utils:9.1.8'
+    api 'com.cronutils:cron-utils:9.2.1'
 }
 
 compileJava {
