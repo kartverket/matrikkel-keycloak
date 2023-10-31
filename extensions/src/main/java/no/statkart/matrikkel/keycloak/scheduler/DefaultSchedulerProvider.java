@@ -178,8 +178,9 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
 
             log.debugf("Executing %s task for %s realm", id, realm);
             try {
-                Resteasy.pushContext(KeycloakSession.class,session);
+                Resteasy.pushContext(KeycloakSession.class, session);
                 HostnameProvider hostnameProvider = session.getProvider(HostnameProvider.class);
+                log.tracef("HostnameProvider type: %s", hostnameProvider.getClass().getSimpleName());
                 String scheme;
                 try {
                     scheme = hostnameProvider.getScheme(null, UrlType.FRONTEND);
@@ -204,7 +205,11 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
                 } catch (NullPointerException e) {
                     contextPath = "/";
                 }
-                Resteasy.pushContext(HttpRequest.class, MockHttpRequest.create("POST", String.format("%s://%s%s/%s", scheme, hostname, (port > 0 ? ":" + port : ""), contextPath)));
+
+                String uri = String.format("%s://%s%s/%s", scheme, hostname, (port > 0 ? ":" + port : ""), contextPath);
+                log.tracef("URI: %s", uri);
+
+                Resteasy.pushContext(HttpRequest.class, MockHttpRequest.create("POST", uri));
 
                 // Vi setter siste utført kjøretidspunkt etter tasken er ferdig, slik at tasker bare blir kjørt
                 // én gang hvis de tar lengere tid en cron intervallet
@@ -227,7 +232,7 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
                         RealmModel taskRealm = taskSession.realms().getRealm(realm.getId());
                         taskSession.getContext().setRealm(taskRealm);
                         taskSession.getContext().setClient(taskRealm.getMasterAdminClient());
-                        Resteasy.pushContext(KeycloakSession.class,taskSession);
+                        Resteasy.pushContext(KeycloakSession.class, taskSession);
                         task.accept(taskSession);
                     }, txTimeout);
                 } catch (Exception e) {

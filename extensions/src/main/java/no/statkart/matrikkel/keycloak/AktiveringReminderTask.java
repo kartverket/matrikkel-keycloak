@@ -12,13 +12,10 @@ import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionT
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.PasswordPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.services.resources.LoginActionsService;
+import org.keycloak.urls.UrlType;
 
 import java.time.DateTimeException;
 import java.time.Instant;
@@ -185,14 +182,22 @@ public class AktiveringReminderTask extends ScheduledTask.Simple {
                     emailExpiresDay = passwordLeewayExpiresDay;
                 }
 
+                KeycloakContext context = keycloakSession.getContext();
+                log.tracef("context.getUri(): %s", context.getUri().getBaseUri());
+                log.tracef("context.getUri(FRONTEND): %s", context.getUri(UrlType.FRONTEND).getBaseUri());
+                log.tracef("context.getUri(BACKEND): %s", context.getUri(UrlType.BACKEND).getBaseUri());
+                log.tracef("context.getContextPath(): %s", context.getContextPath());
+                log.tracef("context.getAuthServerUrl(): %s", context.getAuthServerUrl());
+                log.tracef("context.getRealm().getName: %s", context.getRealm().getName());
+
                 ExecuteActionsActionToken token = new ExecuteActionsActionToken(
                         user.getId(), Math.toIntExact(Instant.EPOCH.until(emailExpiresDay.atStartOfDay(TZ).toInstant(), ChronoUnit.SECONDS)),
                         Arrays.asList("VERIFY_EMAIL", "UPDATE_PASSWORD"),
                         null,
                         Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
                 String link = LoginActionsService
-                        .actionTokenProcessor(keycloakSession.getContext().getUri())
-                        .queryParam("key", token.serialize(keycloakSession, realm, keycloakSession.getContext().getUri()))
+                        .actionTokenProcessor(context.getUri())
+                        .queryParam("key", token.serialize(keycloakSession, realm, context.getUri()))
                         .build(realm.getName())
                         .toString();
                 EmailTemplateProvider emailTemplateProvider = keycloakSession.getProvider(EmailTemplateProvider.class)

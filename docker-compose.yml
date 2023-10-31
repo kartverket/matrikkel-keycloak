@@ -2,7 +2,7 @@
 
 services:
   keycloak:
-    image: ghcr.io/kartverket/matrikkel-keycloak:latest
+    image: ghcr.io/kartverket/matrikkel-keycloak:email-debug
     build:
       dockerfile: Dockerfile
       args:
