@@ -23,7 +23,7 @@ dependencies {
     // Benytter keycloak sin versjon av bouncycastle
     compileOnly 'org.bouncycastle:bcprov-jdk18on:1.76'
 
-    implementation "com.azure:azure-identity:1.10.4"
+    implementation "com.azure:azure-identity:1.11.0"
     implementation "com.microsoft.graph:microsoft-graph:5.75.0"
 
     api 'com.cronutils:cron-utils:9.1.8'
