@@ -5,7 +5,6 @@ plugins {
 }
 
 group = 'no.statkart.matrikkel.keycloak'
-version = '1.9.2' + System.getProperty('suffix', '-SNAPSHOT')
 
 repositories {
     mavenLocal()
@@ -13,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:22.0.4')
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:22.0.5')
     compileOnly 'org.keycloak:keycloak-core'
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
@@ -24,8 +23,8 @@ dependencies {
     // Benytter keycloak sin versjon av bouncycastle
     compileOnly 'org.bouncycastle:bcprov-jdk18on:1.76'
 
-    implementation "com.azure:azure-identity:1.10.0"
-    implementation "com.microsoft.graph:microsoft-graph:5.68.0"
+    implementation "com.azure:azure-identity:1.10.4"
+    implementation "com.microsoft.graph:microsoft-graph:5.75.0"
 
     api 'com.cronutils:cron-utils:9.1.8'
 }
@@ -48,26 +47,5 @@ tasks.assemble {
     dependsOn shadowJar
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-            artifact themesJar
-        }
-    }
-    repositories {
-        maven {
-            String mavenUpload = System.getenv('MAVEN_PUBLISH')
-            if (mavenUpload) {
-                String creds = mavenUpload.split('@|//')[1]
-                url mavenUpload.replace(creds.concat('@'), '') // url kommer i konsoll - ikke ha credentials der
-                credentials {
-                    username creds.split(':')[0] ?: ""
-                    password creds.split(':')[1] ?: ""
-                }
-            }
-        }
-    }
-}
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17

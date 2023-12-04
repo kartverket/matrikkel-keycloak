@@ -1,0 +1,14 @@
+# Kun til bruk for lokal kjøring og testing
+
+services:
+  keycloak:
+    image: ghcr.io/kartverket/matrikkel-keycloak:latest
+    build:
+      dockerfile: Dockerfile
+      args:
+        KC_DB: "dev-mem"
+    user: "150"
+    ports:
+        - "8080:8080"
+    env_file:
+      - ./local.env
