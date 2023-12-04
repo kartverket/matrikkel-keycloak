@@ -67,7 +67,7 @@ Følgende providere er tilgjengelig
 En custom email provider for å kunne sende epost vha microsoft Exchange sitt Graph API med OAuth autentisering. 
 Provideren benytter `com.azure:azure-identity` for oauth-autentiseringen og `com.microsoft.graph:microsoft-graph` for selve epost-utsendingen via Microsoft sitt Graph API.
 
-Provideren er avhengig av at følgende miljøvariabler er satt for å fungere. Hvis en av disse mangler vil det kastes en feil under initialsiering av provideren.
+Provideren er avhengig av at følgende miljøvariabler er satt for å fungere. Hvis en av disse mangler vil det kastes en feil under initialisering av provideren.
 
 ```
 KEYCLOAK_EMAIL_OAUTH_TENANT_ID
