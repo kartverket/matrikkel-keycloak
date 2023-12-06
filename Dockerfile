@@ -7,7 +7,7 @@ WORKDIR ./extensions
 RUN ./gradlew --no-daemon build
 
 # Fetch Keycloak metrics SPI
-FROM curlimages/curl:8.4.0 as metrics-spi-builder
+FROM curlimages/curl:8.5.0 as metrics-spi-builder
 
 ARG KEYCLOAK_METRICS_SPI_RELEASE=4.0.0
 RUN curl -f -L https://github.com/aerogear/keycloak-metrics-spi/releases/download/${KEYCLOAK_METRICS_SPI_RELEASE}/keycloak-metrics-spi-${KEYCLOAK_METRICS_SPI_RELEASE}.jar  \
