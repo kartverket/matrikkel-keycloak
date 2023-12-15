@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:22.0.5')
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:23.0.2')
     compileOnly 'org.keycloak:keycloak-core'
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
