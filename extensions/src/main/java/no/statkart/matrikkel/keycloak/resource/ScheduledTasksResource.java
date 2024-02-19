@@ -1,21 +1,13 @@
 package no.statkart.matrikkel.keycloak.resource;
 
+import jakarta.ws.rs.*;
 import no.statkart.matrikkel.keycloak.scheduler.ScheduledTask;
-import org.jboss.logging.Logger;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderFactory;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Optional;
@@ -27,8 +19,7 @@ public class ScheduledTasksResource {
     private KeycloakSession session;
     private AuthenticationManager.AuthResult auth;
 
-    @Context
-    public void setSession(KeycloakSession session) {
+    public void setSession(@BeanParam KeycloakSession session) {
         this.session = session;
         auth = new AppAuthManager.BearerTokenAuthenticator(session)
                 .setAudience(MatrikkelResource.CLIENT_ID)
