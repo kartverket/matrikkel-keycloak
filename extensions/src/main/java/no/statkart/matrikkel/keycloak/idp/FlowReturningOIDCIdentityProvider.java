@@ -22,19 +22,22 @@ import jakarta.ws.rs.core.UriBuilder;
  * {@link ErrorHandlingIdentityProviderRedirector} til autorisasjonstjener og
  * denne returnerer feil
  */
-public class FlowReturningOIDCIdentityProvider extends OIDCIdentityProvider {
+class FlowReturningOIDCIdentityProvider extends OIDCIdentityProvider {
     public FlowReturningOIDCIdentityProvider(KeycloakSession session, OIDCIdentityProviderConfig config) {
         super(session, config);
     }
 
     @Override
     public Object callback(RealmModel realm, AuthenticationCallback callback, EventBuilder event) {
-        return new FlowReturningOIDCEndpoint(callback, realm, event);
+        return new FlowReturningOIDCEndpoint(callback, realm, event, FlowReturningOIDCIdentityProvider.this);
     }
 
-    protected class FlowReturningOIDCEndpoint extends OIDCEndpoint {
-        public FlowReturningOIDCEndpoint(AuthenticationCallback callback, RealmModel realm, EventBuilder event) {
-            super(callback, realm, event, FlowReturningOIDCIdentityProvider.this);
+    static class FlowReturningOIDCEndpoint extends OIDCEndpoint {
+        public FlowReturningOIDCEndpoint(AuthenticationCallback callback, RealmModel realm, EventBuilder event, FlowReturningOIDCIdentityProvider provider) {
+            super(callback,
+                    realm,
+                    event,
+                    provider);
         }
 
         @Override
