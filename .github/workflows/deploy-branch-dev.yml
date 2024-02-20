@@ -1,7 +1,5 @@
-name: Release and deploy to dev
-on:
-  push:
-    branches: [main]
+name: Deploy branch to dev
+on: workflow_dispatch
 
 jobs:
   build:
@@ -12,25 +10,9 @@ jobs:
       actions: read
     uses: ./.github/workflows/build.yml
     with:
-      create_git_tag: true
+      create_git_tag: false
       push_docker_image: true
     secrets: inherit
-
-  pharos:
-    name: Run Pharos security scan
-    needs: build
-    permissions:
-      actions: read
-      packages: read
-      contents: read
-      security-events: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Run Pharos"
-        uses: kartverket/pharos@v0.1.5
-        with:
-          image_url: ${{ needs.build.outputs.image_url }}
-          allow_severity_level: critical
 
   deploy-dev:
     needs: [pharos, build]
