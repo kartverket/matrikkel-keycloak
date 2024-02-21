@@ -15,7 +15,7 @@ jobs:
     secrets: inherit
 
   deploy-dev:
-    needs: [pharos, build]
+    needs: [build]
     uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
     with:
       namespace: matrikkel-keycloak
