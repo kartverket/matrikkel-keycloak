@@ -22,7 +22,7 @@ dependencies {
     compileOnly 'org.jboss.logging:jboss-logging'
     compileOnly 'org.bouncycastle:bcprov-jdk18on'
 
-    implementation "com.azure:azure-identity:1.10.4"
+    implementation "com.azure:azure-identity:1.11.3"
     implementation "com.microsoft.graph:microsoft-graph:5.75.0"
 
     api 'com.cronutils:cron-utils:9.1.8'
