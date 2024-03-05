@@ -1,6 +1,7 @@
 package no.statkart.matrikkel.keycloak.resource;
 
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import no.statkart.matrikkel.keycloak.scheduler.ScheduledTask;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.provider.ProviderFactory;
@@ -19,7 +20,7 @@ public class ScheduledTasksResource {
     private KeycloakSession session;
     private AuthenticationManager.AuthResult auth;
 
-    public void setSession(@BeanParam KeycloakSession session) {
+    public void setSession(@Context KeycloakSession session) {
         this.session = session;
         auth = new AppAuthManager.BearerTokenAuthenticator(session)
                 .setAudience(MatrikkelResource.CLIENT_ID)
