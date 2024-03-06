@@ -16,11 +16,13 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 @Produces(MediaType.APPLICATION_JSON)
+@RequestScoped
 public class ScheduledTasksResource {
     private KeycloakSession session;
     private AuthenticationManager.AuthResult auth;
 
-    public void setSession(@Context KeycloakSession session) {
+    @Inject
+    public void setSession(KeycloakSession session) {
         this.session = session;
         auth = new AppAuthManager.BearerTokenAuthenticator(session)
                 .setAudience(MatrikkelResource.CLIENT_ID)
