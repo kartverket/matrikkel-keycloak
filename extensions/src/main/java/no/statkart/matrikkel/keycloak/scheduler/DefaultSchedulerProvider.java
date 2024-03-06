@@ -1,6 +1,11 @@
 package no.statkart.matrikkel.keycloak.scheduler;
 
 import com.cronutils.model.time.ExecutionTime;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.control.RequestContextController;
+import jakarta.enterprise.context.spi.Context;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.CDI;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.mock.MockHttpRequest;
 import org.jboss.resteasy.specimpl.ResteasyUriInfo;
@@ -24,6 +29,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -222,11 +228,24 @@ public class DefaultSchedulerProvider implements SchedulerProviderFactory<Defaul
 
                 try {
                     KeycloakModelUtils.runJobInTransactionWithTimeout(session.getKeycloakSessionFactory(), taskSession -> {
-                        RealmModel taskRealm = taskSession.realms().getRealm(realm.getId());
-                        taskSession.getContext().setRealm(taskRealm);
-                        taskSession.getContext().setClient(taskRealm.getMasterAdminClient());
-                        Resteasy.pushContext(KeycloakSession.class,taskSession);
-                        task.accept(taskSession);
+                        Instance<RequestContextController> select = CDI.current().select(RequestContextController.class);
+                        RequestContextController controller = select.get();
+                        try {
+                            RealmModel taskRealm = taskSession.realms().getRealm(realm.getId());
+                            taskSession.getContext().setRealm(taskRealm);
+                            taskSession.getContext().setClient(taskRealm.getMasterAdminClient());
+                            Resteasy.pushContext(KeycloakSession.class,taskSession);
+                            task.accept(taskSession);
+                            controller.activate();
+                            KeycloakSession sess1 = CDI.current().select(KeycloakSession.class).get();
+                            if (!Objects.equals(sess1, taskSession)) {
+                                throw new IllegalStateException("Dette kan bli litt vanskelig");
+                            }
+                        } finally {
+                            controller.deactivate();
+                            select.destroy(controller);
+                        }
+
                     }, txTimeout);
                 } catch (Exception e) {
                     try {
