@@ -1,5 +1,7 @@
 package no.statkart.matrikkel.keycloak.resource;
 
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import no.statkart.matrikkel.keycloak.scheduler.ScheduledTask;
