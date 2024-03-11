@@ -14,12 +14,35 @@ jobs:
       push_docker_image: true
     secrets: inherit
 
+  build-scheduler:
+    permissions:
+      contents: write
+      packages: write
+      security-events: write
+      actions: read
+    uses: ./.github/workflows/build-scheduler.yml
+    with:
+      create_git_tag: false
+      push_docker_image: true
+    secrets: inherit
+
   deploy-dev:
     needs: [build]
     uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
     with:
       namespace: matrikkel-keycloak
       application: matrikkel-keycloak
+      version: ${{ needs.build.outputs.version }}
+      deploy_dev: true
+    secrets:
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN_RW_REPO_PACKAGES }}
+
+  deploy-dev-scheduler:
+    needs: [build-scheduler]
+    uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
+    with:
+      namespace: matrikkel-keycloak
+      application: matrikkel-keycloak-scheduler
       version: ${{ needs.build.outputs.version }}
       deploy_dev: true
     secrets:
