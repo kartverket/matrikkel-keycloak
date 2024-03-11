@@ -1,72 +1,31 @@
 package no.statkart.matrikkel.keycloak;
 
-import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinition;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.parser.CronParser;
-import no.statkart.matrikkel.keycloak.scheduler.ScheduledTask;
 import no.statkart.matrikkel.keycloak.util.UserModels;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.actiontoken.execactions.ExecuteActionsActionToken;
 import org.keycloak.credential.CredentialModel;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailTemplateProvider;
-import org.keycloak.models.Constants;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.PasswordPolicy;
-import org.keycloak.models.RealmModel;
-import org.keycloak.models.UserModel;
+import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.services.resources.LoginActionsService;
 
-import java.time.DateTimeException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AktiveringReminderTask extends ScheduledTask.Simple {
+public class AktiveringReminderTask {
     public static final String SENT_INITIAL_REMINDER_CREATED_AT = "matrikkel.sent_initial_reminder_created_at";
     public static final String SENT_LAST_REMINDER_CREATED_AT = "matrikkel.sent_last_reminder_created_at";
-    public static final String SEND_AKTIVERING_REMINDER = "matrikkel.send_aktivering_reminder";
     public static final String ONLY_PROGRAMVAREBRUKER = "matrikkel.only_programvarebruker";
     public static final Pattern SPAM_EPOST = Pattern.compile("^\\s*spam@(.+\\.)?(kartverket|statkart)\\.no\\s*$", Pattern.CASE_INSENSITIVE);
     private static final Logger log = Logger.getLogger(AktiveringReminderTask.class);
     private static final ZoneId TZ = ZoneId.of("Europe/Oslo");
-    private static final CronDefinition cronDefinition = CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX);
 
-    @Override
-    protected Optional<Cron> getCron(RealmModel realm) {
-        String attribute = realm.getAttribute(SEND_AKTIVERING_REMINDER);
-        if (attribute!= null) {
-            try {
-                return Optional.of(new CronParser(cronDefinition).parse(attribute));
-            } catch (IllegalArgumentException e) {
-                log.errorf(e, "Unable to parse cron expression for %s in realm %s", SEND_AKTIVERING_REMINDER, realm.getName());
-                return Optional.empty();
-            }
-        }
-        return Optional.empty();
-    }
-
-    @Override
-    protected ZoneId getTimeZone() {
-        return TZ;
-    }
-
-    @Override
-    public String getId() {
-        return "matrikkel-aktivering-reminder";
-    }
-
-    @Override
-    protected void run(KeycloakSession keycloakSession) {
+    public void run(KeycloakSession keycloakSession) {
         RealmModel realm = keycloakSession.getContext().getRealm();
         int realmDaysToExpirePassword;
         if (realm.getPasswordPolicy().getPolicies().contains(PasswordPolicy.FORCE_EXPIRED_ID)) {
