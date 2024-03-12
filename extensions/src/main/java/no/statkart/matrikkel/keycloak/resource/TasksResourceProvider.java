@@ -13,37 +13,39 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 
-@SuppressWarnings("CdiManagedBeanInconsistencyInspection")
-public class MatrikkelResourceProvider implements RealmResourceProvider {
+
+public class TasksResourceProvider implements RealmResourceProvider {
 
     public static final String CLIENT_ID = "matrikkel-realm-management";
     public static final String SEND_REMINDER_EMAIL = "send-reminder-email";
     private final KeycloakSession session;
 
-    public MatrikkelResourceProvider(KeycloakSession session) {
+    public TasksResourceProvider(KeycloakSession session) {
         this.session = session;
     }
+
     @POST
-    @Path("send-emails")
-    public void executeSendEpost() {
+    @Path("/send-reminder")
+    public void executeSendReminder() {
         verifyScheduledTaskAdmin();
         new AktiveringReminderTask().run(session);
     }
+
     private void verifyScheduledTaskAdmin() {
         AccessToken.Access access = getAccess(session);
-        if (!access.isUserInRole(MatrikkelResourceProvider.SEND_REMINDER_EMAIL)) {
+        if (!access.isUserInRole(TasksResourceProvider.SEND_REMINDER_EMAIL)) {
             throw new NotAuthorizedException("Bearer");
         }
     }
 
     private static AccessToken.Access getAccess(KeycloakSession session) {
         AuthenticationManager.AuthResult auth = new AppAuthManager.BearerTokenAuthenticator(session)
-                .setAudience(MatrikkelResourceProvider.CLIENT_ID)
+                .setAudience(TasksResourceProvider.CLIENT_ID)
                 .authenticate();
         if (session == null || auth.getToken() == null) {
             throw new NotAuthorizedException("Bearer");
         }
-        AccessToken.Access access = auth.getToken().getResourceAccess(MatrikkelResourceProvider.CLIENT_ID);
+        AccessToken.Access access = auth.getToken().getResourceAccess(TasksResourceProvider.CLIENT_ID);
         if (access == null) {
             throw new NotAuthorizedException("Bearer");
         }
@@ -51,7 +53,7 @@ public class MatrikkelResourceProvider implements RealmResourceProvider {
     }
 
     @Override
-    public MatrikkelResourceProvider getResource() {
+    public TasksResourceProvider getResource() {
         return this;
     }
 
@@ -63,9 +65,8 @@ public class MatrikkelResourceProvider implements RealmResourceProvider {
     public static class Factory implements RealmResourceProviderFactory {
 
         @Override
-        public MatrikkelResourceProvider create(KeycloakSession session)
-        {
-            return new MatrikkelResourceProvider(session);
+        public TasksResourceProvider create(KeycloakSession session) {
+            return new TasksResourceProvider(session);
         }
 
         @Override
@@ -85,7 +86,7 @@ public class MatrikkelResourceProvider implements RealmResourceProvider {
 
         @Override
         public String getId() {
-            return "matrikkel";
+            return "tasks";
         }
 
     }
