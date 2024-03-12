@@ -13,6 +13,7 @@ import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 
+@SuppressWarnings("CdiManagedBeanInconsistencyInspection")
 public class TasksResourceProvider implements RealmResourceProvider {
 
     public static final String CLIENT_ID = "matrikkel-realm-management";
