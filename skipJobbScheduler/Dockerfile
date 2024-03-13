@@ -12,6 +12,8 @@ COPY . /app
 
 # Install any needed dependencies specified in requirements.txt
 RUN pip install --no-cache-dir requests
+# Set the timezone to Oslo
+ENV TZ=Europe/Oslo
 
 # Run the script when the container launches
 CMD ["python", "run_jobb.py"]
