@@ -43,7 +43,7 @@ jobs:
     with:
       namespace: matrikkel-keycloak
       application: matrikkel-keycloak-scheduler
-      version: ${{ needs.build.outputs.version }}
+      version: ${{ needs.build-scheduler.outputs.version }}
       deploy_dev: true
     secrets:
       PAT_TOKEN: ${{ secrets.PAT_TOKEN_RW_REPO_PACKAGES }}
