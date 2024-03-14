@@ -1,4 +1,5 @@
 import os
+import datetime
 import requests
 from urllib.parse import urlencode
 
@@ -6,6 +7,10 @@ TOKEN_ENDPOINT = os.environ.get('TOKEN_ENDPOINT')
 JOB_ENDPOINT = os.environ.get('JOB_ENDPOINT')
 CLIENT_ID = os.environ.get('CLIENT_ID')
 CLIENT_SECRET = os.environ.get('CLIENT_SECRET')
+
+def get_current_time():
+    current_datetime = datetime.datetime.now()
+    print("Current date and time:", current_datetime)
 
 def get_access_token(token_endpoint, client_id, client_secret):
     try:
@@ -43,7 +48,8 @@ def run_job(job_endpoint):
 
 def main():
     try:
-        run_job(JOB_ENDPOINT)
+        get_current_time()
+        #run_job(JOB_ENDPOINT)
     except Exception as e:
         print('An error occurred:', e)
         exit(1)
