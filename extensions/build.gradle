@@ -18,7 +18,6 @@ dependencies {
     compileOnly 'org.keycloak:keycloak-server-spi-private'
     compileOnly 'org.keycloak:keycloak-services'
     compileOnly 'org.keycloak:keycloak-model-legacy-private'
-    compileOnly 'jakarta.enterprise:jakarta.enterprise.cdi-api'
     compileOnly 'org.jboss.spec.javax.ws.rs:jboss-jaxrs-api_2.1_spec'
     compileOnly 'org.jboss.logging:jboss-logging'
     compileOnly 'org.bouncycastle:bcprov-jdk18on'
