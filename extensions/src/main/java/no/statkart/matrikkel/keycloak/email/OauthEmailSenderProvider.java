@@ -1,9 +1,8 @@
 package no.statkart.matrikkel.keycloak.email;
 
-import com.microsoft.graph.core.ClientException;
 import com.microsoft.graph.models.*;
-import com.microsoft.graph.requests.GraphServiceClient;
-import okhttp3.Request;
+import com.microsoft.graph.serviceclient.GraphServiceClient;
+import com.microsoft.graph.users.item.sendmail.SendMailPostRequestBody;
 import org.jboss.logging.Logger;
 import org.keycloak.email.EmailException;
 import org.keycloak.email.EmailSenderProvider;
@@ -17,9 +16,9 @@ public class OauthEmailSenderProvider implements EmailSenderProvider {
     private static final Logger logger = Logger.getLogger(OauthEmailSenderProvider.class);
 
     private final String userId;
-    private final GraphServiceClient<Request> graphServiceClient;
+    private final GraphServiceClient graphServiceClient;
 
-    public OauthEmailSenderProvider(GraphServiceClient<Request> graphServiceClient, String userId) {
+    public OauthEmailSenderProvider(GraphServiceClient graphServiceClient, String userId) {
         this.graphServiceClient = graphServiceClient;
         this.userId = userId;
         logger.debug("Init OauthEmailSenderProvider");
@@ -29,40 +28,34 @@ public class OauthEmailSenderProvider implements EmailSenderProvider {
     public void send(Map<String, String> config, String address, String subject, String textBody, String htmlBody) throws EmailException {
         logger.debugv("Sending email with OauthEmailSenderProvider");
 
-        try {
-            graphServiceClient.users(userId)
-                    .sendMail(UserSendMailParameterSet.newBuilder()
-                            .withMessage(createMessage(subject, address, textBody, htmlBody))
-                            .withSaveToSentItems(false)
-                            .build())
-                    .buildRequest()
-                    .post();
-            logger.debug("Email sent using OauthEmailSenderProvider");
-        } catch (ClientException e) {
-            throw new EmailException("Error sending email using OauthEmailSenderProvider", e);
-        }
+        SendMailPostRequestBody sendMailPostRequestBody = new SendMailPostRequestBody();
+        sendMailPostRequestBody.setMessage(createMessage(subject, address, textBody, htmlBody));
+        sendMailPostRequestBody.setSaveToSentItems(false);
+
+        graphServiceClient.users().byUserId(userId).sendMail().post(sendMailPostRequestBody);
+        logger.debug("Email sent using OauthEmailSenderProvider");
     }
 
     private static Message createMessage(String subject, String recipient, String textBody, String htmlBody) {
         Message message = new Message();
-        message.toRecipients = List.of(createRecipient(recipient));
-        message.subject = subject;
-        message.body = createBody(textBody, htmlBody).orElse(null);
+        message.setToRecipients(List.of(createRecipient(recipient)));
+        message.setSubject(subject);
+        message.setBody(createBody(textBody, htmlBody).orElse(null));
         return message;
     }
 
     private static Optional<ItemBody> createBody(String textBody, String htmlBody) {
         if (htmlBody != null) {
             ItemBody itemBody = new ItemBody();
-            itemBody.content = htmlBody;
-            itemBody.contentType = BodyType.HTML;
+            itemBody.setContent(htmlBody);
+            itemBody.setContentType(BodyType.Html);
             return Optional.of(itemBody);
         }
 
         if (textBody != null) {
             ItemBody itemBody = new ItemBody();
-            itemBody.content = textBody;
-            itemBody.contentType = BodyType.TEXT;
+            itemBody.setContent(textBody);
+            itemBody.setContentType(BodyType.Text);
             return Optional.of(itemBody);
         }
 
@@ -71,8 +64,9 @@ public class OauthEmailSenderProvider implements EmailSenderProvider {
 
     private static Recipient createRecipient(String emailAddress) {
         Recipient r = new Recipient();
-        r.emailAddress = new EmailAddress();
-        r.emailAddress.address = emailAddress;
+        EmailAddress address = new EmailAddress();
+        address.setAddress(emailAddress);
+        r.setEmailAddress(address);
         return r;
     }
 
