@@ -82,3 +82,32 @@ Denne provideren må eksplisitt aktiveres ved å legge inn følgende parametere 
 kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
 ```
 
+
+## Scheduler
+
+Aktivering av Scheduler-jobben som sjekker om bruker har utgått passord og utsending av mail er lagt på et API-endepunkt.
+Det er en skipjob som spinner opp skipJobbScheduler/dockerfile som kjører scriptet skipJobbScheduler/run_job.py
+
+Endepunktet(Merk at miljø og realm kan variere):
+```
+http://localhost:8080/auth/realms/<REALM>/tasks/send-reminder
+```
+
+Ønsker vi å spinne dette opp lokalt kan det gjøres med disse verdiene inn i skipJobbScheduler/dockerfile.
+```
+ENV CLIENT_ID="schedule-job"
+ENV CLIENT_SECRET="clientsecret"
+ENV TOKEN_ENDPOINT="<MILJØ>/auth/realms/<REALM>/protocol/openid-connect/token"
+ENV JOB_ENDPOINT="<MILJØ>/auth/realms/<REALM>/tasks/send-reminder"
+```
+
+PS: For keycloak lokalt må en gjøre disse innstillingene via admin-guiet:
+```
+1. Opprette client 'matrikkel-realm-management'. Huk BORT alt på 'Capability config' -> 'Client authentication' og 'Authentication flow'
+2. Under fanen 'Roles' skal det opprettes en ny rolle. Rollen må hete 'send-reminder-email'
+3. Opprette en ny client 'schedule-job' 
+4. Under settings på clienten må 'Client authentication' være PÅ. 'Authentication flow' skal også bare ha 'Service accounts roles' avhuket.
+5. Under fanen 'Client scopes' skal 'roles' være den eneste som har configurasjonen 'Default'. De resterende skal være 'Optional' eller 'none'
+6. Under fanen 'Service account roles' må vi legge til rollen vi opprettet over. Assign role -> Filter by clients ->  'matrikkel-realm-management - send-reminder-email'
+7. Sett deretter inn clientsecret som variable under 'ENV CLIENT_SECRET'
+```
