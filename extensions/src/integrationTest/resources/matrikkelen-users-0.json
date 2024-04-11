@@ -1,0 +1,86 @@
+{
+  "realm" : "matrikkelen",
+  "users" : [ {
+    "id" : "00f8ca76-6971-4f5e-af4c-a3d6c4746816",
+    "username" : "admin",
+    "emailVerified" : false,
+    "createdTimestamp" : 1712576597734,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "f3ebf6b9-b3b5-4218-81bc-c6836a54c823",
+      "type" : "password",
+      "createdDate" : 1712576598013,
+      "secretData" : "{\"value\":\"OKQ4/epaaJM5PVXbCBwfZtRiJ6ppHKsJCUxc/8icx9cvAX158D2L8dF7vih0Dg/SUc2R2pf2t75dswNph245hw==\",\"salt\":\"MJ+9vSLwIPniNFceJ14bFg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-matrikkelen" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "e93cf8d9-b60b-4290-9a39-8b5e40aa3210",
+    "username" : "test",
+    "firstName" : "test",
+    "lastName" : "testersen",
+    "email" : "test.testersen@kartverket.no",
+    "emailVerified" : true,
+    "createdTimestamp" : 1712576598025,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "22312618-08f8-4258-903c-e25373d30493",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1712837282105,
+      "secretData" : "{\"value\":\"KYrCJ4O86xnXqWQ3FDUJ4aiXcxNPRaXngDUOUhSZ65Z23i4Vg3RSwHOcsAd2Xra8lkJtDRmwCqBxUg2dXtBC3g==\",\"salt\":\"icwJ6bdzK++4QEDjR/gxTQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    }, {
+      "id" : "fc38e84a-975c-4b41-a9ce-4ac357545387",
+      "type" : "password-history",
+      "createdDate" : 1712576598292,
+      "secretData" : "{\"value\":\"LpLupHN5r4fog3YD5KKkN3sFUUF0josE+YXxLiLpSFpaKHc+rjOjlSuFrZSXMp5wnj75/sHKTn5jHaymwN1kVA==\",\"salt\":\"kULRN7TmTKav4D56MNJqoQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-matrikkelen" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "360c9e5e-191a-4596-954f-af624bb5ebf8",
+    "username" : "service-account-matrikkel",
+    "emailVerified" : false,
+    "createdTimestamp" : 1712576598392,
+    "enabled" : true,
+    "totp" : false,
+    "serviceAccountClientId" : "matrikkel",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-matrikkelen" ],
+    "clientRoles" : {
+      "realm-management" : [ "manage-users", "view-users" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "dee52ad2-5fa7-4b51-8c47-ca570b19fc2a",
+    "username" : "service-account-schedule-job",
+    "emailVerified" : false,
+    "createdTimestamp" : 1712643899904,
+    "enabled" : true,
+    "totp" : false,
+    "serviceAccountClientId" : "schedule-job",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-matrikkelen" ],
+    "clientRoles" : {
+      "matrikkel-realm-management" : [ "send-reminder-email" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
