@@ -1,2 +1,5 @@
-version: 1.0
-organisasjon: Eiendom
+version: 3.0
+organization: Eiendom
+product: Matrikkel
+repo_types: [PublicApi]
+platforms: [SKIP]
