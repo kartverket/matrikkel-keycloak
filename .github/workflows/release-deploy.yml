@@ -1,7 +1,7 @@
 name: Release and deploy to dev
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   build:
@@ -33,12 +33,52 @@ jobs:
           allow_severity_level: critical
 
   deploy-dev:
-    needs: [pharos, build]
+    needs: [ pharos, build ]
     uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
     with:
       namespace: matrikkel-keycloak
       application: matrikkel-keycloak
       version: ${{ needs.build.outputs.version }}
+      deploy_dev: true
+    secrets:
+      PAT_TOKEN: ${{ secrets.PAT_TOKEN_RW_REPO_PACKAGES }}
+
+
+  build-scheduler:
+    permissions:
+      contents: write
+      packages: write
+      security-events: write
+      actions: read
+    uses: ./.github/workflows/build-scheduler.yml
+    with:
+      create_git_tag: true
+      push_docker_image: true
+    secrets: inherit
+
+  pharos-scheduler:
+    name: Run Pharos security scan
+    needs: build-scheduler
+    permissions:
+      actions: read
+      packages: read
+      contents: read
+      security-events: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Run Pharos"
+        uses: kartverket/pharos@v0.1.5
+        with:
+          image_url: ${{ needs.build-scheduler.outputs.image_url }}
+          allow_severity_level: critical
+
+  deploy-dev-scheduler:
+    needs: [ pharos-scheduler, build-scheduler ]
+    uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
+    with:
+      namespace: matrikkel-keycloak
+      application: matrikkel-keycloak-scheduler
+      version: ${{ needs.build-scheduler.outputs.version }}
       deploy_dev: true
     secrets:
       PAT_TOKEN: ${{ secrets.PAT_TOKEN_RW_REPO_PACKAGES }}
