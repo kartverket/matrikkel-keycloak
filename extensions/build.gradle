@@ -42,7 +42,7 @@ dependencies {
     implementation "com.azure:azure-identity:1.11.4"
     implementation "com.microsoft.graph:microsoft-graph:6.5.1"
     integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:3.3.0')
-    integrationTestImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+    integrationTestImplementation 'org.testcontainers:junit-jupiter:1.19.8'
     integrationTestImplementation 'io.rest-assured:rest-assured:4.4.0'
     // JAXB API(rest-assured er avhengig )
     integrationTestImplementation 'javax.xml.bind:jaxb-api:2.3.1'
