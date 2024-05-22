@@ -6,7 +6,7 @@ WORKDIR ./extensions
 
 RUN ./gradlew --no-daemon build
 
-FROM quay.io/keycloak/keycloak:24.0.3 as keycloak-builder
+FROM quay.io/keycloak/keycloak:24.0.4 as keycloak-builder
 
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
@@ -28,7 +28,7 @@ RUN chmod +r-w opt/keycloak/providers/*
 USER keycloak
 RUN /opt/keycloak/bin/kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
 
-FROM quay.io/keycloak/keycloak:24.0.3
+FROM quay.io/keycloak/keycloak:24.0.4
 # SKIP runs all containers with UID 150
 COPY --from=keycloak-builder --chown=150:150 /opt/keycloak/ /opt/keycloak/
 
