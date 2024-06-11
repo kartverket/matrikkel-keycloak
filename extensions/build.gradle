@@ -39,7 +39,7 @@ dependencies {
     compileOnly 'org.jboss.logging:jboss-logging'
     compileOnly 'org.bouncycastle:bcprov-jdk18on'
 
-    implementation "com.azure:azure-identity:1.12.1"
+    implementation "com.azure:azure-identity:1.12.2"
     implementation "com.microsoft.graph:microsoft-graph:6.10.0"
     integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:3.3.1')
     integrationTestImplementation 'org.testcontainers:junit-jupiter:1.19.8'
