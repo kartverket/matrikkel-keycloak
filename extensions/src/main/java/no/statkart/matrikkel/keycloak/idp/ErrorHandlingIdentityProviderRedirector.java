@@ -71,7 +71,10 @@ public class ErrorHandlingIdentityProviderRedirector implements Authenticator {
         String accessCode = new ClientSessionCode<>(context.getSession(), context.getRealm(), context.getAuthenticationSession()).getOrGenerateCode();
         String clientId = context.getAuthenticationSession().getClient().getClientId();
         String tabId = context.getAuthenticationSession().getTabId();
-        URI location = Urls.identityProviderAuthnRequest(context.getUriInfo().getBaseUri(), idp.getAlias(), context.getRealm().getName(), accessCode, clientId, tabId);
+        String clientData = AuthenticationProcessor.getClientData(context.getSession(), context.getAuthenticationSession());
+        String loginHint = context.getAuthenticationSession().getClientNote(OIDCLoginProtocol.LOGIN_HINT_PARAM);
+
+        URI location = Urls.identityProviderAuthnRequest(context.getUriInfo().getBaseUri(), idp.getAlias(), context.getRealm().getName(), accessCode, clientId, tabId, clientData, loginHint);
         if (context.getAuthenticationSession().getClientNote(OAuth2Constants.DISPLAY) != null) {
             location = UriBuilder.fromUri(location).queryParam(OAuth2Constants.DISPLAY, context.getAuthenticationSession().getClientNote(OAuth2Constants.DISPLAY)).build();
         }

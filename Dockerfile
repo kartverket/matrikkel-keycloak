@@ -1,7 +1,7 @@
-ARG KEYCLOAK_VERSION=24.0.4
+ARG KEYCLOAK_VERSION=25.0.1
 
 # Build matrikkel extensions
-FROM eclipse-temurin:17-jdk AS extensions-builder
+FROM eclipse-temurin:21-jdk AS extensions-builder
 
 COPY ./extensions ./extensions
 WORKDIR ./extensions
