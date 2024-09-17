@@ -8,7 +8,7 @@ WORKDIR ./extensions
 
 RUN ./gradlew --no-daemon build
 
-FROM quay.io/keycloak/keycloak:$KEYCLOAK_VERSION as keycloak-builder
+FROM quay.io/keycloak/keycloak:$KEYCLOAK_VERSION AS keycloak-builder
 
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
