@@ -1,17 +1,16 @@
 package no.statkart.matrikkel.keycloak.realm.oidc;
 
 import com.google.common.io.Resources;
-import org.keycloak.events.EventBuilder;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
-import org.keycloak.protocol.oidc.OIDCProviderConfig;
-
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.keycloak.events.EventBuilder;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.protocol.oidc.OIDCLoginProtocolService;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -25,8 +24,8 @@ import java.nio.charset.StandardCharsets;
  * alle klienter har omskrevet sin innloggingsflyt
  */
 public class CustomOIDCLoginProtocolService extends OIDCLoginProtocolService {
-    public CustomOIDCLoginProtocolService(KeycloakSession session, EventBuilder event, OIDCProviderConfig providerConfig) {
-        super(session, event, providerConfig);
+    public CustomOIDCLoginProtocolService(KeycloakSession session, EventBuilder event) {
+        super(session, event);
     }
 
     @GET

@@ -1,4 +1,4 @@
-ARG KEYCLOAK_VERSION=25.0.1
+ARG KEYCLOAK_VERSION=26.0.5
 
 # Build matrikkel extensions
 FROM eclipse-temurin:21-jdk AS extensions-builder
@@ -21,7 +21,7 @@ ENV KC_DB=$KC_DB \
 COPY --from=extensions-builder /extensions/build/libs/matrikkel-keycloak-extension-all.jar /opt/keycloak/providers/matrikkel-keycloak-extension.jar
 COPY --from=extensions-builder /extensions/build/libs/matrikkel-keycloak-extension-themes.jar /opt/keycloak/providers/themes.jar
 
-ARG KEYCLOAK_METRICS_SPI_RELEASE=5.0.0
+ARG KEYCLOAK_METRICS_SPI_RELEASE=7.0.0
 ADD https://github.com/aerogear/keycloak-metrics-spi/releases/download/${KEYCLOAK_METRICS_SPI_RELEASE}/keycloak-metrics-spi-${KEYCLOAK_METRICS_SPI_RELEASE}.jar /opt/keycloak/providers/keycloak-metrics-spi.jar
 
 USER root
