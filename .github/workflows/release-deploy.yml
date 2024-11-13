@@ -36,7 +36,7 @@ jobs:
     needs: [ pharos, build ]
     uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
     with:
-      namespace: matrikkel-keycloak
+      namespace: matrikkel-keycloak-dev
       application: matrikkel-keycloak
       version: ${{ needs.build.outputs.version }}
       deploy_dev: true
@@ -76,7 +76,7 @@ jobs:
     needs: [ pharos-scheduler, build-scheduler ]
     uses: kartverket/heimdall-apps/.github/workflows/release-app.yml@main
     with:
-      namespace: matrikkel-keycloak
+      namespace: matrikkel-keycloak-dev
       application: matrikkel-keycloak-scheduler
       version: ${{ needs.build-scheduler.outputs.version }}
       deploy_dev: true
