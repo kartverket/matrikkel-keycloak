@@ -28,7 +28,7 @@ tasks.named('integrationTest') {
 }
 
 dependencies {
-    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:26.0.5')
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:26.0.0')
     compileOnly 'org.keycloak:keycloak-core'
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
@@ -42,7 +42,7 @@ dependencies {
     implementation "com.microsoft.graph:microsoft-graph:6.13.0"
     implementation 'com.google.guava:guava:31.1-jre'
 
-    integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:3.5.1')
+    integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:3.5.0')
     integrationTestImplementation 'org.testcontainers:junit-jupiter:1.19.8'
     integrationTestImplementation 'io.rest-assured:rest-assured:4.4.0'
     // JAXB API(rest-assured er avhengig )
