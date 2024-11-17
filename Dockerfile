@@ -1,4 +1,4 @@
-ARG KEYCLOAK_VERSION=26.0.0
+ARG KEYCLOAK_VERSION=26.0.5
 
 # Build matrikkel extensions
 FROM eclipse-temurin:21-jdk AS extensions-builder
@@ -13,7 +13,6 @@ ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
     KC_METRICS_ENABLED=true \
-    KC_FEATURES_DISABLED='persistent-user-sessions' \
     KC_HTTP_RELATIVE_PATH='/auth'
 
 
