@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Run Pharos"
-        uses: kartverket/pharos@v0.2.4
+        uses: kartverket/pharos@v0.2.5
         with:
           image_url: ${{ needs.build.outputs.image_url }}
           allow_severity_level: critical
@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Run Pharos"
-        uses: kartverket/pharos@v0.2.4
+        uses: kartverket/pharos@v0.2.5
         with:
           image_url: ${{ needs.build-scheduler.outputs.image_url }}
           allow_severity_level: critical
