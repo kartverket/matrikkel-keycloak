@@ -1,5 +1,3 @@
-ARG KEYCLOAK_VERSION=26.0.5
-
 # Build matrikkel extensions
 FROM eclipse-temurin:21-jdk AS extensions-builder
 
@@ -8,7 +6,7 @@ WORKDIR ./extensions
 
 RUN ./gradlew --no-daemon build
 
-FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION} as keycloak-builder
+FROM keycloak/keycloak:26.0.5@sha256:089b5898cb0ba151224c83aef3806538582880029eb5ea71c2afd00b627d4907 as keycloak-builder
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
@@ -32,7 +30,7 @@ RUN chmod +r-w opt/keycloak/providers/*
 USER keycloak
 RUN /opt/keycloak/bin/kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
 
-FROM quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+FROM keycloak/keycloak:26.0.5@sha256:089b5898cb0ba151224c83aef3806538582880029eb5ea71c2afd00b627d4907
 # SKIP runs all containers with UID 150
 COPY --from=keycloak-builder --chown=150:150 /opt/keycloak/ /opt/keycloak/
 
