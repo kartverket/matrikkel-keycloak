@@ -1,4 +1,4 @@
-ARG KEYCLOAK_VERSION=26.0.5
+ARG KEYCLOAK_VERSION=26.1.0
 
 # Build matrikkel extensions
 FROM eclipse-temurin:21-jdk AS extensions-builder
