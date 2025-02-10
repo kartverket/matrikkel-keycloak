@@ -1,6 +1,5 @@
 package no.statkart.matrikkel.keycloak;
 
-import com.google.common.collect.ImmutableList;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 import org.keycloak.Config;
@@ -18,33 +17,29 @@ import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.google.common.base.Preconditions.checkState;
-
 public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
     public static final String PROVIDER_ID = "oidc-broker-id-hashed-mapper";
-    
+
     private static final List<ProviderConfigProperty> PROVIDER_CONFIG_PROPERTIES;
     private static final String DEFAULT_CLAIM_NAME = "sub";
     private static final String CLAIM_CONFIG_KEY = "claim";
     private static final ReadWriteLock lock = new ReentrantReadWriteLock();
     private static final String CONFIG_DIR_KEY = "jboss.server.config.dir";
-    private static volatile  Map<String, byte[]> peppers = new HashMap<>();
+    private static volatile Map<String, byte[]> peppers = new HashMap<>();
 
     static {
-        PROVIDER_CONFIG_PROPERTIES = ImmutableList
-                .<ProviderConfigProperty>builder()
-                .add(new ProviderConfigProperty(
+        PROVIDER_CONFIG_PROPERTIES = List.of(
+                new ProviderConfigProperty(
                         CLAIM_CONFIG_KEY,
                         "Claim",
                         "Claim",
                         ProviderConfigProperty.STRING_TYPE,
-                        null))
-                .build();
+                        null));
     }
 
     @Override
     public String[] getCompatibleProviders() {
-        return new String[] {OIDCIdentityProviderFactory.PROVIDER_ID};
+        return new String[]{OIDCIdentityProviderFactory.PROVIDER_ID};
     }
 
     @Override
@@ -100,8 +95,9 @@ public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
             try {
                 Properties properties = new Properties();
                 String configDirProperty = System.getProperty(CONFIG_DIR_KEY);
-                checkState(configDirProperty != null && !configDirProperty.trim().isEmpty(), "System property %s is not set", CONFIG_DIR_KEY);
-                File propertyFile = new File(configDirProperty + "/broker-id-hashed.properties");
+                if (configDirProperty == null || configDirProperty.isBlank())
+                    throw new IllegalStateException(String.format("System property %s is not set", CONFIG_DIR_KEY));
+                File propertyFile = new File(configDirProperty, "broker-id-hashed.properties");
                 if (propertyFile.isFile()) {
                     try (FileInputStream fis = new FileInputStream(propertyFile)) {
                         properties.load(fis);
@@ -120,7 +116,9 @@ public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
                     }
                 }
                 pepper = Base64.getUrlDecoder().decode(properties.getProperty(alias).getBytes(StandardCharsets.ISO_8859_1));
-                checkState(pepper!= null && pepper.length > 8, "Invalid pepper for %s, check %s: too short", alias, configDirProperty + "/broker-id-hashed.properties");
+                if (pepper == null || pepper.length <= 8) {
+                    throw new IllegalStateException(String.format("Invalid pepper for %s, check %s/broker-id-hashed.properties: too short", alias, configDirProperty));
+                }
                 peppers.put(alias, pepper);
             } finally {
                 lock.writeLock().unlock();
