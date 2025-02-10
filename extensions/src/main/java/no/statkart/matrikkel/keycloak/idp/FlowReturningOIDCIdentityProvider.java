@@ -41,10 +41,10 @@ class FlowReturningOIDCIdentityProvider extends OIDCIdentityProvider {
         }
 
         @Override
-        public Response authResponse(String state, String authorizationCode, String error) {
+        public Response authResponse(String state, String authorizationCode, String error, String errorDescription) {
             if (state == null || error == null) {
                 // ingen session, eller ingen error betyr default håndtering
-                return super.authResponse(state, authorizationCode, error);
+                return super.authResponse(state, authorizationCode, error, errorDescription);
             }
 
             // Hvis vi ikke er redirected til OIDC-provider av en ErrorHandlingIdentityProviderRedirectorFactory,
@@ -52,11 +52,11 @@ class FlowReturningOIDCIdentityProvider extends OIDCIdentityProvider {
             AuthenticationSessionModel authSession = callback.getAndVerifyAuthenticationSession(state);
             String executionId = authSession.getAuthNote(AuthenticationProcessor.CURRENT_AUTHENTICATION_EXECUTION);
             if (executionId == null) {
-                return super.authResponse(state, authorizationCode, error);
+                return super.authResponse(state, authorizationCode, error, errorDescription);
             }
             AuthenticationExecutionModel authExecution = authSession.getRealm().getAuthenticationExecutionById(executionId);
             if (!authExecution.getAuthenticator().equals(ErrorHandlingIdentityProviderRedirectorFactory.MATRIKKEL_IDP_REDIRECTOR)) {
-                return super.authResponse(state, authorizationCode, error);
+                return super.authResponse(state, authorizationCode, error, errorDescription);
             }
 
             // Redirect tilbake til flyten (som nå er på en ErrorHandlingIdentityProviderRedirectorFactory)
@@ -68,7 +68,6 @@ class FlowReturningOIDCIdentityProvider extends OIDCIdentityProvider {
                     .queryParam(Constants.CLIENT_ID, authSession.getClient().getClientId())
                     .queryParam(Constants.TAB_ID, authSession.getTabId())
                     .queryParam(ErrorHandlingIdentityProviderRedirector.ERROR, error);
-            String errorDescription = httpRequest.getUri().getQueryParameters().getFirst(OAuth2Constants.ERROR_DESCRIPTION);
             if (errorDescription != null && !errorDescription.trim().isEmpty()) {
                 uriBuilder.queryParam(ErrorHandlingIdentityProviderRedirector.ERROR_DESCRIPTION, errorDescription);
             }

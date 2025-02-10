@@ -4,21 +4,17 @@ import org.keycloak.Config;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.protocol.oidc.OIDCLoginProtocolFactory;
-import org.keycloak.protocol.oidc.OIDCProviderConfig;
 
 
 public class CustomOIDCLoginProtocolFactory extends OIDCLoginProtocolFactory {
 
-    private OIDCProviderConfig providerConfig;
-
     @Override
     public Object createProtocolEndpoint(KeycloakSession session, EventBuilder event) {
-        return new CustomOIDCLoginProtocolService(session, event, providerConfig);
+        return new CustomOIDCLoginProtocolService(session, event);
     }
 
     @Override
     public void init(Config.Scope config) {
-        this.providerConfig = new OIDCProviderConfig(config);
         super.init(config);
     }
 
