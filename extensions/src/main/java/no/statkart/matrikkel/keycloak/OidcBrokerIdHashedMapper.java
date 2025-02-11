@@ -95,8 +95,9 @@ public class OidcBrokerIdHashedMapper implements IdentityProviderMapper {
             try {
                 Properties properties = new Properties();
                 String configDirProperty = System.getProperty(CONFIG_DIR_KEY);
-                if (configDirProperty == null || configDirProperty.isBlank())
+                if (configDirProperty == null || configDirProperty.isBlank()) {
                     throw new IllegalStateException(String.format("System property %s is not set", CONFIG_DIR_KEY));
+                 }
                 File propertyFile = new File(configDirProperty, "broker-id-hashed.properties");
                 if (propertyFile.isFile()) {
                     try (FileInputStream fis = new FileInputStream(propertyFile)) {
