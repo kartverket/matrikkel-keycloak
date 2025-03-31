@@ -1,5 +1,5 @@
-version: 1.0
 organization: Eiendom
 product: Matrikkel
+visibility: [internal]
 repo_types: [PublicApi]
 platforms: [SKIP]
