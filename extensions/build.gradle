@@ -43,7 +43,7 @@ dependencies {
     implementation 'com.google.guava:guava:33.4.8-jre'
 
     // https://github.com/dasniko/testcontainers-keycloak
-    integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:3.6.0')
+    integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:3.7.0')
     integrationTestImplementation 'org.testcontainers:junit-jupiter:1.21.1'
     integrationTestImplementation 'io.rest-assured:rest-assured:5.5.5'
 }
