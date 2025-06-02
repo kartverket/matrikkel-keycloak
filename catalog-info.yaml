@@ -4,12 +4,14 @@ kind: "Component"
 metadata:
   name: "matrikkel-keycloak"
   tags:
-  - "internal"
+    - "public"
 spec:
-  type: "library"
+  type: "service"
   lifecycle: "production"
   owner: "heimdall"
   system: "matrikkel"
+  providesApis:
+    - "matrikkel-keycloak-api"
 ---
 apiVersion: "backstage.io/v1alpha1"
 kind: "Group"
@@ -20,19 +22,35 @@ spec:
   type: "security_champion"
   parent: "eiendom_security_champions"
   members:
-  - "lislei"
+    - "lislei"
   children:
-  - "resource:matrikkel-keycloak"
+    - "resource:matrikkel-keycloak"
 ---
 apiVersion: "backstage.io/v1alpha1"
 kind: "Resource"
 metadata:
   name: "matrikkel-keycloak"
   links:
-  - url: "https://github.com/kartverket/matrikkel-keycloak"
-    title: "matrikkel-keycloak på GitHub"
+    - url: "https://github.com/kartverket/matrikkel-keycloak"
+      title: "matrikkel-keycloak på GitHub"
 spec:
   type: "repo"
   owner: "security_champion_matrikkel-keycloak"
   dependencyOf:
-  - "component:matrikkel-keycloak"
+    - "component:matrikkel-keycloak"
+---
+apiVersion: "backstage.io/v1alpha1"
+kind: "API"
+metadata:
+  name: "matrikkel-keycloak-api"
+  tags:
+    - "public"
+spec:
+  type: "openapi"
+  lifecycle: "production"
+  owner: "heimdall"
+  definition: |
+    openapi: "3.0.0"
+    info:
+        title: matrikkel-keycloak API
+    paths:
