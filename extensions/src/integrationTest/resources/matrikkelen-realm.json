@@ -356,7 +356,7 @@
     "containerId" : "dd3128ad-ba07-40d0-97dc-118d9d36c5d3"
   },
   "requiredCredentials" : [ "password" ],
-  "passwordPolicy" : "forceExpiredPasswordChange(365) and passwordHistory(3) and length(8)",
+  "passwordPolicy" : "forceExpiredPasswordChange(36500) and passwordHistory(3) and length(8)",
   "otpPolicyType" : "totp",
   "otpPolicyAlgorithm" : "HmacSHA1",
   "otpPolicyInitialCounter" : 0,
