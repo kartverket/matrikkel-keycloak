@@ -25,6 +25,6 @@ public class CustomOIDCLoginProtocolFactory extends OIDCLoginProtocolFactory {
      */
     @Override
     public int order() {
-        return 1;
+        return super.order() + 1;
     }
 }
