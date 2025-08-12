@@ -40,7 +40,7 @@ jobs:
       image_url: ${{ steps.setOutput.outputs.image_url }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Bump version and push tag
         id: tag_version
