@@ -36,6 +36,11 @@ public class OauthEmailSenderProvider implements EmailSenderProvider {
         logger.debug("Email sent using OauthEmailSenderProvider");
     }
 
+    @Override
+    public void validate(Map<String, String> config) throws EmailException {
+        // MSGraph deals with validation for us
+    }
+
     private static Message createMessage(String subject, String recipient, String textBody, String htmlBody) {
         Message message = new Message();
         message.setToRecipients(List.of(createRecipient(recipient)));
