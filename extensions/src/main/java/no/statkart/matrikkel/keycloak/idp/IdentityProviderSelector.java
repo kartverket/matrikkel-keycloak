@@ -126,9 +126,16 @@ public class IdentityProviderSelector implements Authenticator {
             String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, identityProvider);
             Map<String, String> config = identityProvider.getConfig();
 
-                orderedSet.add(new IdentityProviderBean.IdentityProvider(identityProvider.getAlias(),
-                        displayName, identityProvider.getProviderId(), loginUrl,
-                        config != null ? config.get("guiOrder") : null, getLoginIconClasses(identityProvider.getAlias())));
+            IdentityProviderBean.IdentityProvider idp = new IdentityProviderBean.IdentityProvider(
+                    identityProvider.getAlias(),
+                    displayName,
+                    identityProvider.getProviderId(),
+                    loginUrl,
+                    config != null ? config.get("guiOrder") : null,
+                    getLoginIconClasses(identityProvider.getAlias()),
+                    null
+            );
+            orderedSet.add(idp);
         }
 
         private String getLoginIconClasses(String alias) {
