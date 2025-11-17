@@ -1,0 +1,225 @@
+name: Deploy to All Environments
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  CI: true
+  TZ: Europe/Oslo
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  version:
+    name: Calculate Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version-string.outputs.version }}
+      image: ${{ steps.version-string.outputs.image }}
+      schedulerImage: ${{ steps.version-string.outputs.schedulerImage }}
+
+    steps:
+      - name: Generate version string
+        id: version-string
+        shell: bash
+        run: |
+          version="$(date -u '+%Y.%m.%d-%H.%M')-$(echo "${GITHUB_SHA}" | cut -c1-7)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/kartverket/matrikkel-keycloak:${version}" >> "$GITHUB_OUTPUT"
+          echo "schedulerImage=ghcr.io/kartverket/matrikkel-keycloak-scheduler:${version}" >> "$GITHUB_OUTPUT"
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          architecture: x64
+          cache: gradle
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v5
+
+      - name: Run tests
+        working-directory: ./extensions
+        run: ./gradlew integrationTest
+
+  package-image:
+    name: Build and (conditionally) Push Docker Image
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - test
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Login to GitHub Container Registry
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        env:
+          image: ${{ needs.version.outputs.image }}
+        with:
+          context: .
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ${{ env.image }}
+
+  package-scheduler-image:
+    name: Build and (conditionally) Push Docker SchedulerImage
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - test
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Login to GitHub Container Registry
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
+        env:
+          image: ${{ needs.version.outputs.schedulerImage }}
+        with:
+          context: skipJobbScheduler/
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ${{ env.image }}
+
+  pharos:
+    name: Run Pharos
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - package-image
+    permissions:
+      actions: read
+      packages: read
+      contents: read
+      security-events: write
+    steps:
+      - name: "Run Pharos"
+        uses: kartverket/pharos@v0.5.0
+        with:
+          image_url: ${{ needs.version.outputs.image }}
+          trivy: true
+          tfsec: true
+          disable_severity_check: true
+
+  pharos-scheduler-image:
+    name: Run Pharos
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - version
+      - package-scheduler-image
+    permissions:
+      actions: read
+      packages: read
+      contents: read
+      security-events: write
+    steps:
+      - name: "Run Pharos"
+        uses: kartverket/pharos@v0.5.0
+        with:
+          image_url: ${{ needs.version.outputs.schedulerImage }}
+          trivy: true
+          tfsec: true
+          disable_severity_check: true
+
+  deploy-dev:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - version
+      - package-image
+      - package-scheduler-image
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Deploy matrikkel-status to dev
+        uses: kartverket/matrikkel-actions/apps-repo-deploy@TH-2313-action
+        env:
+          version: ${{ needs.version.outputs.version }}
+        with:
+          apps: |
+            atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak:${{ env.version }}
+            atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak-scheduler:${{ env.version }}
+
+  deploy-qa:
+    name: Deploy to QA
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - version
+      - package-image
+      - package-scheduler-image
+      - deploy-dev
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Deploy matrikkel-status to QA environments
+        uses: kartverket/matrikkel-actions/apps-repo-deploy@TH-2313-action
+        env:
+          version: ${{ needs.version.outputs.version }}
+        with:
+          apps: |
+            atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak:${{ env.version }}
+            atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak-scheduler:${{ env.version }}
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - version
+      - package-image
+      - package-scheduler-image
+      - pharos
+      - pharos-scheduler-image
+      - deploy-qa
+    environment:
+      name: production
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Deploy matrikkel-status to production
+        uses: kartverket/matrikkel-actions/apps-repo-deploy@TH-2313-action
+        env:
+          version: ${{ needs.version.outputs.version }}
+        with:
+          apps: |
+            atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ env.version }}
+            atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak-scheduler:${{ env.version }}
