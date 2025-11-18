@@ -168,7 +168,7 @@ jobs:
 
     steps:
       - name: Deploy matrikkel-status to dev
-        uses: kartverket/matrikkel-actions/apps-repo-deploy@TH-2313-action
+        uses: kartverket/matrikkel-actions/apps-repo-deploy@main
         env:
           version: ${{ needs.version.outputs.version }}
         with:
@@ -190,7 +190,7 @@ jobs:
 
     steps:
       - name: Deploy matrikkel-status to QA environments
-        uses: kartverket/matrikkel-actions/apps-repo-deploy@TH-2313-action
+        uses: kartverket/matrikkel-actions/apps-repo-deploy@main
         env:
           version: ${{ needs.version.outputs.version }}
         with:
@@ -216,7 +216,7 @@ jobs:
 
     steps:
       - name: Deploy matrikkel-status to production
-        uses: kartverket/matrikkel-actions/apps-repo-deploy@TH-2313-action
+        uses: kartverket/matrikkel-actions/apps-repo-deploy@main
         env:
           version: ${{ needs.version.outputs.version }}
         with:
