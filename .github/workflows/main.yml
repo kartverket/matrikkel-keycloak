@@ -7,6 +7,7 @@ on:
 env:
   CI: true
   TZ: Europe/Oslo
+  SLACK_CHANNEL: C049VELT2LA
 
 concurrency:
   group: ${{ github.ref }}
@@ -60,7 +61,7 @@ jobs:
       - version
       - test
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -73,7 +74,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
+      - name: Tag commit med artifaktversjon
+        run: |
+          git tag ${{ needs.version.outputs.version }}
+          git push origin ${{ needs.version.outputs.version }}
       - name: Build Docker image
         uses: docker/build-push-action@v6
         env:
@@ -197,9 +201,8 @@ jobs:
           apps: |
             atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak:${{ env.version }}
             atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak-scheduler:${{ env.version }}
-
-  deploy-prod:
-    name: Deploy to Production
+  deploy-prod-notifier:
+    name: Slack Notify; Deploy to Production
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     needs:
@@ -209,12 +212,49 @@ jobs:
       - pharos
       - pharos-scheduler-image
       - deploy-qa
+    outputs:
+      messageId: ${{ steps.slack_notify.outputs.messageId }}
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    steps:
+      - name: Notify slack (Setup)
+        id: slack_notify
+        uses: kartverket/matrikkel-actions/slack-approval-notifier/setup-octo@feat/slack-notifier-action
+        with:
+          channel: ${{ env.SLACK_CHANNEL }}
+          environment: 'produksjon'
+          appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs:
+      - version
+      - deploy-prod-notifier
     environment:
       name: production
     permissions:
+      actions: read
+      contents: read
       id-token: write
 
     steps:
+      - name: Notify slack (Update)
+        uses: kartverket/matrikkel-actions/slack-approval-notifier/update-octo@feat/slack-notifier-action
+        with:
+          channel: ${{ env.SLACK_CHANNEL }}
+          environment: 'produksjon'
+          appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
+          messageId: ${{ needs.deploy-prod-notifier.outputs.messageId }}
+          status: ${{ job.status }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       - name: Deploy matrikkel-status to production
         uses: kartverket/matrikkel-actions/apps-repo-deploy@main
         env:
