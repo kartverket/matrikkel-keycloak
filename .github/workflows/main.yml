@@ -74,10 +74,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Tag commit med artifaktversjon
-        run: |
-          git tag ${{ needs.version.outputs.version }}
-          git push origin ${{ needs.version.outputs.version }}
       - name: Build Docker image
         uses: docker/build-push-action@v6
         env:
@@ -86,6 +82,10 @@ jobs:
           context: .
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ env.image }}
+      - name: Tag commit med artifaktversjon
+        run: |
+          git tag ${{ needs.version.outputs.version }}
+          git push origin ${{ needs.version.outputs.version }}
 
   package-scheduler-image:
     name: Build and (conditionally) Push Docker SchedulerImage
