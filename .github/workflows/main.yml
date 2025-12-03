@@ -221,7 +221,7 @@ jobs:
     steps:
       - name: Notify slack (Setup)
         id: slack_notify
-        uses: kartverket/matrikkel-actions/slack-approval-notifier/setup-octo@feat/slack-notifier-action
+        uses: kartverket/matrikkel-actions/slack-approval-notifier/setup-octo@main
         with:
           channel: ${{ env.SLACK_CHANNEL }}
           environment: 'produksjon'
@@ -245,7 +245,7 @@ jobs:
 
     steps:
       - name: Notify slack (Update)
-        uses: kartverket/matrikkel-actions/slack-approval-notifier/update-octo@feat/slack-notifier-action
+        uses: kartverket/matrikkel-actions/slack-approval-notifier/update-octo@main
         with:
           channel: ${{ env.SLACK_CHANNEL }}
           environment: 'produksjon'
