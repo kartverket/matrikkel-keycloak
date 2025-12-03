@@ -7,7 +7,7 @@ on:
 env:
   CI: true
   TZ: Europe/Oslo
-  SLACK_CHANNEL: C049VELT2LA
+  SLACK_CHANNEL: C04SQEX2858
 
 concurrency:
   group: ${{ github.ref }}
