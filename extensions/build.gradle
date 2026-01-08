@@ -39,12 +39,12 @@ dependencies {
     compileOnly 'org.bouncycastle:bcprov-jdk18on'
 
     implementation "com.azure:azure-identity:1.18.1"
-    implementation "com.microsoft.graph:microsoft-graph:6.57.0"
+    implementation "com.microsoft.graph:microsoft-graph:6.60.0"
     implementation 'com.google.guava:guava:33.5.0-jre'
 
     // https://github.com/dasniko/testcontainers-keycloak
     integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:3.9.0')
-    integrationTestImplementation 'org.testcontainers:junit-jupiter:1.21.3'
+    integrationTestImplementation 'org.testcontainers:junit-jupiter:1.21.4'
     integrationTestImplementation 'io.rest-assured:rest-assured:6.0.0'
 }
 
