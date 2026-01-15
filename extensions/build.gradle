@@ -28,7 +28,7 @@ tasks.named('integrationTest') {
 }
 
 dependencies {
-    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:26.5.0')
+    compileOnly enforcedPlatform('org.keycloak:keycloak-parent:26.5.1')
     compileOnly 'org.keycloak:keycloak-core'
     compileOnly 'org.keycloak:keycloak-server-spi'
     compileOnly 'org.keycloak:keycloak-server-spi-private'
