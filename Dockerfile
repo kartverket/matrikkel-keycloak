@@ -5,7 +5,7 @@ COPY ./extensions /extensions
 WORKDIR /extensions
 RUN ./gradlew --no-daemon build
 
-FROM keycloak/keycloak:26.5.0@sha256:5fdd7cda82e58775ed124294c7e16fabc33166d38dfc4aabebda7d64e7a964bf AS keycloak-builder
+FROM keycloak/keycloak:26.5.2@sha256:fb31a59deb46f746f2aaa25adc5da39ceccac4fd22d36a519562b0bf02e8df20 AS keycloak-builder
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
@@ -29,7 +29,7 @@ RUN chmod +r-w opt/keycloak/providers/*
 USER keycloak
 RUN /opt/keycloak/bin/kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
 
-FROM keycloak/keycloak:26.5.0@sha256:5fdd7cda82e58775ed124294c7e16fabc33166d38dfc4aabebda7d64e7a964bf
+FROM keycloak/keycloak:26.5.2@sha256:fb31a59deb46f746f2aaa25adc5da39ceccac4fd22d36a519562b0bf02e8df20
 # SKIP runs all containers with UID 150
 COPY --from=keycloak-builder --chown=150:150 /opt/keycloak/ /opt/keycloak/
 
