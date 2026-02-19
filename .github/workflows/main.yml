@@ -177,6 +177,7 @@ jobs:
       - package-scheduler-image
     permissions:
       id-token: write
+      contents: read
 
     steps:
       - name: Deploy matrikkel-keycloak to dev
@@ -209,6 +210,7 @@ jobs:
       - deploy-dev
     permissions:
       id-token: write
+      contents: read
 
     steps:
       - name: Deploy matrikkel-keycloak to QA environments
