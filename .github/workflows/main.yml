@@ -189,7 +189,7 @@ jobs:
             atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak:${{ env.version }}
             atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak-scheduler:${{ env.version }}
       - name: Verify deployment to dev
-        uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
+        uses: kartverket/matrikkel-actions/k8s-deployment-feedback@wip/replay-mode
         with:
           cluster: ${{ env.DEV_CLUSTER_NAME }}
           apps: |
