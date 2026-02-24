@@ -1,16 +1,21 @@
 package no.statkart.matrikkel.keycloak;
 
 import no.statkart.matrikkel.keycloak.util.UserModels;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.credential.CredentialModel;
+import org.keycloak.events.Details;
+import org.keycloak.events.Errors;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.PasswordPolicy;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.credential.PasswordCredentialModel;
+import org.keycloak.representations.idm.OAuth2ErrorRepresentation;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -37,7 +42,13 @@ public class AktiveringAuthenticator implements Authenticator {
                     "Innlogging ({0}) feilet for {1}: Midlertidig bruker gått ut på dato",
                     flowPath, user.getUsername());
             // Midlertidig bruker har gått ut på dato
-            context.failure(AuthenticationFlowError.USER_DISABLED);
+            if (isTokenFlow(flowPath)) {
+                context.getEvent().detail(Details.REASON, "Temporary user disabled");
+                context.getEvent().error(Errors.USER_DISABLED);
+                context.forceChallenge(tokenInvalidGrantResponse("Temporary user disabled"));
+            } else {
+                context.failure(AuthenticationFlowError.USER_DISABLED);
+            }
             return;
         }
 
@@ -84,7 +95,13 @@ public class AktiveringAuthenticator implements Authenticator {
                 logger.infov(
                         "Innlogging ({0}) for {1}: Passord ikke fornyet i løpet av 14 dager. Konto må reaktiveres av brukeradmin",
                         flowPath, user.getUsername());
-                context.failure(AuthenticationFlowError.CREDENTIAL_SETUP_REQUIRED);
+                if (isTokenFlow(flowPath)) {
+                    context.getEvent().detail(Details.REASON, "Password renewal grace period expired");
+                    context.getEvent().error(Errors.INVALID_USER_CREDENTIALS);
+                    context.forceChallenge(tokenInvalidGrantResponse("Password renewal grace period expired"));
+                } else {
+                    context.failure(AuthenticationFlowError.CREDENTIAL_SETUP_REQUIRED);
+                }
                 return;
             }
         }
@@ -128,6 +145,18 @@ public class AktiveringAuthenticator implements Authenticator {
                     }
                 })
                 .min(Long::compareTo);
+    }
+
+    private static boolean isTokenFlow(String flowPath) {
+        return "token".equals(flowPath);
+    }
+
+    private static Response tokenInvalidGrantResponse(String description) {
+        return Response
+                .status(Response.Status.BAD_REQUEST)
+                .entity(new OAuth2ErrorRepresentation("invalid_grant", description))
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .build();
     }
 
     private static Optional<Long> getRealmPasswordExpiresDays(RealmModel realm) {

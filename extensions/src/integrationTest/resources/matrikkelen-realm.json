@@ -1822,6 +1822,13 @@
       "autheticatorFlow" : false,
       "userSetupAllowed" : false
     }, {
+      "authenticator" : "matrikkel-aktivering-validate",
+      "authenticatorFlow" : false,
+      "requirement" : "REQUIRED",
+      "priority" : 25,
+      "autheticatorFlow" : false,
+      "userSetupAllowed" : false
+    }, {
       "authenticatorFlow" : true,
       "requirement" : "CONDITIONAL",
       "priority" : 30,

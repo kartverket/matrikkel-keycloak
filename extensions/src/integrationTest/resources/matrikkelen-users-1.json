@@ -1,0 +1,79 @@
+{
+  "realm" : "matrikkelen",
+  "users" : [ {
+    "id" : "5f7b4d6a-66d7-4f66-9f79-0b335a687101",
+    "username" : "test-valid",
+    "firstName" : "Test",
+    "lastName" : "Valid",
+    "email" : "test-valid@kartverket.no",
+    "emailVerified" : true,
+    "createdTimestamp" : 1712576598025,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "7f2d3c11-3328-4be5-8fd1-78f5f448d001",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1712837282105,
+      "secretData" : "{\"value\":\"KYrCJ4O86xnXqWQ3FDUJ4aiXcxNPRaXngDUOUhSZ65Z23i4Vg3RSwHOcsAd2Xra8lkJtDRmwCqBxUg2dXtBC3g==\",\"salt\":\"icwJ6bdzK++4QEDjR/gxTQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-matrikkelen" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "5f7b4d6a-66d7-4f66-9f79-0b335a687102",
+    "username" : "test-passord-reactivation",
+    "firstName" : "Test",
+    "lastName" : "PassordReactivation",
+    "email" : "test-passord-reactivation@kartverket.no",
+    "emailVerified" : true,
+    "createdTimestamp" : 1712576598025,
+    "enabled" : true,
+    "totp" : false,
+    "attributes" : {
+      "matrikkel.expire_password_days" : [ "1" ]
+    },
+    "credentials" : [ {
+      "id" : "7f2d3c11-3328-4be5-8fd1-78f5f448d002",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 0,
+      "secretData" : "{\"value\":\"KYrCJ4O86xnXqWQ3FDUJ4aiXcxNPRaXngDUOUhSZ65Z23i4Vg3RSwHOcsAd2Xra8lkJtDRmwCqBxUg2dXtBC3g==\",\"salt\":\"icwJ6bdzK++4QEDjR/gxTQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-matrikkelen" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "5f7b4d6a-66d7-4f66-9f79-0b335a687103",
+    "username" : "test-temp-expired",
+    "firstName" : "Test",
+    "lastName" : "TempExpired",
+    "email" : "test-temp-expired@kartverket.no",
+    "emailVerified" : true,
+    "createdTimestamp" : 1712576598025,
+    "enabled" : true,
+    "totp" : false,
+    "attributes" : {
+      "matrikkel.user_expires_at" : [ "0" ]
+    },
+    "credentials" : [ {
+      "id" : "7f2d3c11-3328-4be5-8fd1-78f5f448d003",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1712837282105,
+      "secretData" : "{\"value\":\"KYrCJ4O86xnXqWQ3FDUJ4aiXcxNPRaXngDUOUhSZ65Z23i4Vg3RSwHOcsAd2Xra8lkJtDRmwCqBxUg2dXtBC3g==\",\"salt\":\"icwJ6bdzK++4QEDjR/gxTQ==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":210000,\"algorithm\":\"pbkdf2-sha512\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-matrikkelen" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
