@@ -83,7 +83,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           image: ${{ needs.version.outputs.image }}
         with:
@@ -117,7 +117,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           image: ${{ needs.version.outputs.schedulerImage }}
         with:
