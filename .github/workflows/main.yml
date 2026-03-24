@@ -139,7 +139,7 @@ jobs:
       security-events: write
     steps:
       - name: "Run Pharos"
-        uses: kartverket/pharos@v0.6.2
+        uses: kartverket/pharos@112c1589d5022bc0cdf3353cb4c6047aa4a3a26f # v0.6.2
         with:
           image_url: ${{ needs.version.outputs.image }}
           trivy: true
@@ -149,7 +149,7 @@ jobs:
   pharos-scheduler-image:
     name: Run Pharos
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest2
     needs:
       - version
       - package-scheduler-image
@@ -160,7 +160,7 @@ jobs:
       security-events: write
     steps:
       - name: "Run Pharos"
-        uses: kartverket/pharos@v0.6.2
+        uses: kartverket/pharos@112c1589d5022bc0cdf3353cb4c6047aa4a3a26f # v0.6.2
         with:
           image_url: ${{ needs.version.outputs.schedulerImage }}
           trivy: true
