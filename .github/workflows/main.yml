@@ -149,7 +149,7 @@ jobs:
   pharos-scheduler-image:
     name: Run Pharos
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest2
+    runs-on: ubuntu-latest
     needs:
       - version
       - package-scheduler-image
