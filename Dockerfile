@@ -37,6 +37,4 @@ ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     TZ=Europe/Oslo
 
-USER 150
-
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
