@@ -7,14 +7,13 @@ RUN ./gradlew --no-daemon build
 
 # Download JARs in a separate stage to work around ADD permission issues
 FROM alpine@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659 AS jar-downloader
-RUN apt-get update && apt-get install -y curl
 
 # Download Oracle JDBC - https://www.keycloak.org/server/db
-RUN curl -fsSL -o /ojdbc17.jar \
+RUN wget -O /ojdbc17.jar \
       https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc17/23.8.0.25.04/ojdbc17-23.8.0.25.04.jar && \
-    curl -fsSL -o /orai18n.jar \
+    wget -O /orai18n.jar \
       https://repo1.maven.org/maven2/com/oracle/database/nls/orai18n/23.8.0.25.04/orai18n-23.8.0.25.04.jar && \
-    curl -fsSL -o /keycloak-metrics-spi.jar \
+    wget -O /keycloak-metrics-spi.jar \
       https://github.com/aerogear/keycloak-metrics-spi/releases/download/7.0.0/keycloak-metrics-spi-7.0.0.jar
 
 
