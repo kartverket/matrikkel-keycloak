@@ -18,7 +18,7 @@ RUN curl -fsSL -o /ojdbc17.jar \
       https://github.com/aerogear/keycloak-metrics-spi/releases/download/7.0.0/keycloak-metrics-spi-7.0.0.jar
 
 
-FROM dhi.io/keycloak:26@sha256:c074118562ec2ec5596430150aae10fdd9d272ce3c2b924596b1e2d31955dadf AS keycloak-builder
+FROM dhi.io/keycloak:26@sha256:c074118562ec2ec5596430150aae10fdd9d272ce3c2b924596b1e2d31955dadf
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
