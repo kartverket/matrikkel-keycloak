@@ -15,7 +15,5 @@ RUN pip install --no-cache-dir requests
 # Set the timezone to Oslo
 ENV TZ=Europe/Oslo
 
-USER 150
-
 # Run the script when the container launches
 CMD ["python", "run_jobb.py"]
