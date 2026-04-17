@@ -2,6 +2,7 @@ name: Sikkerhetsscanning av images
 
 on:
     workflow_dispatch:
+    workflow_call:
     schedule:
         - cron: '00 1 * * *'  # 01:00 each day.
 
