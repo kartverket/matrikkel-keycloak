@@ -207,7 +207,6 @@ jobs:
       - package-image
       - package-scheduler-image
       - pharos
-      - pharos-scheduler-image
       - deploy-qa
     outputs:
       messageId: ${{ steps.slack_notify.outputs.messageId }}
