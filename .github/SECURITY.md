@@ -5,6 +5,6 @@ We encourage responsible disclosure of security vulnerabilities. If you find som
 ### Ways to report
 
 This repository has enabled Github Private Vulnerability Reporting. DO NOT Use public issues if you've found a vulnerability.
-[Report a issue](https://github.com/kartverket/matrikkel-ekstern-data/security/advisories/new)
+[Report a issue](https://github.com/kartverket/matrikkel-keycloak/security/advisories/new)
 
 If you are absolutely unable to or have strong reasons not to use GitHub's vulnerability reporting workflow, please reach out to the Kartverkets security team at cybersikkerhet@kartverket.no
