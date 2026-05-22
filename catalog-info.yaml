@@ -14,32 +14,6 @@ spec:
     - "matrikkel-keycloak-api"
 ---
 apiVersion: "backstage.io/v1alpha1"
-kind: "Group"
-metadata:
-  name: "security_champion_matrikkel-keycloak"
-  title: "Security Champion matrikkel-keycloak"
-spec:
-  type: "security_champion"
-  parent: "eiendom_security_champions"
-  members:
-    - "lislei"
-  children:
-    - "resource:matrikkel-keycloak"
----
-apiVersion: "backstage.io/v1alpha1"
-kind: "Resource"
-metadata:
-  name: "matrikkel-keycloak"
-  links:
-    - url: "https://github.com/kartverket/matrikkel-keycloak"
-      title: "matrikkel-keycloak på GitHub"
-spec:
-  type: "repo"
-  owner: "security_champion_matrikkel-keycloak"
-  dependencyOf:
-    - "component:matrikkel-keycloak"
----
-apiVersion: "backstage.io/v1alpha1"
 kind: "API"
 metadata:
   name: "matrikkel-keycloak-api"
