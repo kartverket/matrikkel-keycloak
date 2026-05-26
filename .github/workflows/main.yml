@@ -187,12 +187,15 @@ jobs:
           apps: |
             atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak:${{ env.version }}
             atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak-scheduler:${{ env.version }}
+            atkv3-prod:matrikkel-keycloak-prodtest:matrikkel-keycloak:${{ env.version }}
+            atkv3-prod:matrikkel-keycloak-prodtest:matrikkel-keycloak-scheduler:${{ env.version }}
       - name: Verify deployment to QA
         uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
         with:
           cluster: ${{ env.PROD_CLUSTER_NAME }}
           apps: |
             matrikkel-keycloak-betatest:keycloak:${{ needs.version.outputs.version }}
+            matrikkel-keycloak-prodtest:keycloak:${{ needs.version.outputs.version }}
           includeStatefulSets: 'true'
           kubernetes_project_id: ${{ env.PROD_KUBERNETES_PROJECT_ID }}
           service_account: ${{ env.PROD_SERVICE_ACCOUNT }}
