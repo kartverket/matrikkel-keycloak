@@ -224,6 +224,7 @@ jobs:
         id: slack_notify
         uses: kartverket/matrikkel-actions/slack-approval-notifier/setup-octo@main
         with:
+          identity: 'matrikkel-keycloak'
           channel: ${{ env.SLACK_CHANNEL }}
           environment: 'produksjon'
           appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
@@ -248,6 +249,7 @@ jobs:
       - name: Notify slack (Update)
         uses: kartverket/matrikkel-actions/slack-approval-notifier/update-octo@main
         with:
+          identity: 'matrikkel-keycloak'
           channel: ${{ env.SLACK_CHANNEL }}
           environment: 'produksjon'
           appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
