@@ -154,6 +154,7 @@ jobs:
           apps: |
             atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak:${{ env.version }}
             atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak-scheduler:${{ env.version }}
+          identity: 'matrikkel-keycloak'
       - name: Verify deployment to dev
         uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
         with:
@@ -189,6 +190,7 @@ jobs:
             atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak-scheduler:${{ env.version }}
             atkv3-prod:matrikkel-keycloak-prodtest:matrikkel-keycloak:${{ env.version }}
             atkv3-prod:matrikkel-keycloak-prodtest:matrikkel-keycloak-scheduler:${{ env.version }}
+          identity: 'matrikkel-keycloak'
       - name: Verify deployment to QA
         uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
         with:
@@ -222,6 +224,7 @@ jobs:
         id: slack_notify
         uses: kartverket/matrikkel-actions/slack-approval-notifier/setup-octo@main
         with:
+          identity: 'matrikkel-keycloak'
           channel: ${{ env.SLACK_CHANNEL }}
           environment: 'produksjon'
           appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
@@ -246,6 +249,7 @@ jobs:
       - name: Notify slack (Update)
         uses: kartverket/matrikkel-actions/slack-approval-notifier/update-octo@main
         with:
+          identity: 'matrikkel-keycloak'
           channel: ${{ env.SLACK_CHANNEL }}
           environment: 'produksjon'
           appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
@@ -262,6 +266,7 @@ jobs:
           apps: |
             atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ env.version }}
             atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak-scheduler:${{ env.version }}
+          identity: 'matrikkel-keycloak'
       - name: Verify deployment to production
         if: false # Disabler sjekken her mens vi venter på at vi kan skru på auto-sync i argo
         uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
