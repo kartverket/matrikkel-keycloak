@@ -1,0 +1,44 @@
+name: Publiser Gradle-avhengigheter og review for pull requests
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - '.security/**'
+      - 'catalog-info.yaml'
+
+  push:
+    branches:
+      - 'main'
+# NB: Ikke bruk paths-ignore på main.
+# Dependency review trenger oppdatert dependency snapshot fra base-commits på main.
+
+jobs:
+  dependency-submission:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Generate and submit dependency graph
+        uses: gradle/actions/dependency-submission@v6
+        env:
+          PACKAGES_TOKEN: ${{ secrets.SHARED_PACKAGES_READ_TOKEN }}
+        with:
+          build-root-directory: ./extensions
+
+      - name: Perform dependency review
+        uses: actions/dependency-review-action@v5
+        if: github.event_name == 'pull_request'
+        with:
+          fail-on-severity: critical
+          deny-licenses: AGPL-1.0-only, AGPL-1.0-or-later, AGPL-3.0, AGPL-3.0-or-later
+          comment-summary-in-pr: always
