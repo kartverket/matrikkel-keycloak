@@ -111,3 +111,8 @@ PS: For keycloak lokalt må en gjøre disse innstillingene via admin-guiet:
 6. Under fanen 'Service account roles' må vi legge til rollen vi opprettet over. Assign role -> Filter by clients ->  'matrikkel-realm-management - send-reminder-email'
 7. Sett deretter inn clientsecret som variable under 'ENV CLIENT_SECRET'
 ```
+## AD-innlogging kobling
+
+For innlogging av interne kartverksbrukere ved hjelp av Azure AD er det satt opp en Aure Active Directory Applikasjon. Her er det blandt annet registrert redirect urler for Keycloak.
+Denne integrasjonen er satt vha. click-ops og er avhengige av en secret under Configure -> Identity Providers -> Kartverket (Azure AD) -> Client ID/Secret, navn på applikasjonen i Azure er: KV - MatrikkelKeyCloak. 
+Verdi for secreten finnes i Dashlane og ny secret kan bestilles gjennom Pureservice.
