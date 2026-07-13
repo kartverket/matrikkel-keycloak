@@ -46,7 +46,7 @@ dependencies {
     // https://github.com/dasniko/testcontainers-keycloak
     integrationTestImplementation('com.github.dasniko:testcontainers-keycloak:4.2.1')
     integrationTestImplementation 'org.testcontainers:junit-jupiter:1.21.4'
-    integrationTestImplementation 'io.rest-assured:rest-assured:6.0.0'
+    integrationTestImplementation 'io.rest-assured:rest-assured:6.0.1'
 }
 
 java {
