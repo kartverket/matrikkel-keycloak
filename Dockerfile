@@ -34,8 +34,9 @@ FROM keycloak/keycloak:26.7.0@sha256:0f198be292568439d700cdbfb893e69a6009bb43a94
 COPY --from=keycloak-builder --chown=150:150 /opt/keycloak/ /opt/keycloak/
 
 ARG KC_DB=oracle
-ENV KC_DB=$KC_DB \
-    TZ=Europe/Oslo
+ENV KC_DB=$KC_DB
+ENV TZ=Europe/Oslo
+ENV KC_SPI_BRUTE_FORCE_PROTECTOR__DEFAULT_BRUTE_FORCE_DETECTOR__ALLOW_CONCURRENT_REQUESTS=true
 
 USER 150
 
