@@ -32,7 +32,7 @@ jobs:
                   image: ${{ matrix.package_name }} # GHCR pakkenavn
 
             - name: Run Pharos
-              uses: kartverket/pharos@e5a5cf71dd41384d6d62c7d9b387851c0457e81b # v0.6.4
+              uses: kartverket/pharos@446d11f033ffe30b4c91f885c3ad34ea3d8c6af7 # v0.7.0
               with:
                   trivy_category: ${{ matrix.package_name }}
                   disable_severity_check: 'true' # Ikke blokker byggeløyper ved evt sårbarheter!
