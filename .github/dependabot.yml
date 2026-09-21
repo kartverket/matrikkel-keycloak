@@ -6,6 +6,9 @@ updates:
       - "/skipJobbScheduler"
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "eclipse-temurin"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: ".github/workflows"
     schedule:
