@@ -79,7 +79,7 @@ KEYCLOAK_EMAIL_OAUTH_USER_ID
 Denne provideren må eksplisitt aktiveres ved å legge inn følgende parametere til `kc.sh build`:
 
 ```shell
-kc.sh --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider build
+kc.sh build --spi-email-sender--oauth-email-provider--enabled=true --spi-email-sender--provider-default=oauth-email-provider
 ```
 
 
