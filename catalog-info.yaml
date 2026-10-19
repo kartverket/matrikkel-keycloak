@@ -8,7 +8,7 @@ metadata:
 spec:
   type: "service"
   lifecycle: "production"
-  owner: "heimdall"
+  owner: "group:default/bygning"
   system: "m22"
   providesApis:
     - "matrikkel-keycloak-api"
@@ -22,7 +22,7 @@ metadata:
 spec:
   type: "openapi"
   lifecycle: "production"
-  owner: "heimdall"
+  owner: "bygning"
   definition: |
     openapi: "3.0.0"
     info:

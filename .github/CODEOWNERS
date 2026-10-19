@@ -2,4 +2,4 @@
 # Dokumentasjon: https://kartverket.atlassian.net/wiki/spaces/HEIM/overview
 
 # Standard eierskap
-* @kartverket/matrikkel-core
+* @kartverket/matrikkel-core @kartverket/bygning
