@@ -1,0 +1,27 @@
+---
+name: kartverket-standard
+description: Kartverkets standardkonfigurasjon for KI-assistanse.
+tools: [
+    # VSCode
+    "read",
+    "edit",
+    "search",
+    "web",
+    "todo",
+    # IntelliJ
+    "insert_edit_into_file",
+    "replace_string_in_file",
+    "create_file",
+    "apply_patch",
+    "open_file",
+    "ask_questions",
+    "get_errors",
+    "list_dir",
+    "read_file",
+    "file_search",
+    "grep_search",
+    "validate_cves",
+  ]
+---
+
+Kartverkets standardkonfigurasjon for KI-assistanse.
