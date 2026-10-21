@@ -1,5 +1,5 @@
 # Build matrikkel extensions
-FROM eclipse-temurin:21-jdk AS extensions-builder
+FROM eclipse-temurin:25-jdk AS extensions-builder
 
 COPY ./extensions /extensions
 WORKDIR /extensions
@@ -17,7 +17,7 @@ RUN wget -O /ojdbc17.jar \
       https://github.com/aerogear/keycloak-metrics-spi/releases/download/7.0.0/keycloak-metrics-spi-7.0.0.jar
 
 
-FROM dhi.io/keycloak:26@sha256:c074118562ec2ec5596430150aae10fdd9d272ce3c2b924596b1e2d31955dadf
+FROM dhi.io/keycloak:26@sha256:56956e02ba899e6f9a8ed4bf67755f8906194db76be92b22e4d01fe059169f74
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
@@ -33,9 +33,8 @@ COPY --from=jar-downloader --chown=65532:65532 /keycloak-metrics-spi.jar /opt/ke
 COPY --from=jar-downloader --chown=65532:65532 /ojdbc17.jar /opt/keycloak/providers/ojdbc17.jar
 COPY --from=jar-downloader --chown=65532:65532 /orai18n.jar /opt/keycloak/providers/orai18n.jar
 
-RUN /opt/keycloak/bin/kc.sh \
-    --spi-email-sender-provider-oauth-email-provider-enabled=true \
-    --spi-email-sender-provider=oauth-email-provider \
-    build
+USER nonroot
+
+RUN /opt/keycloak/bin/kc.sh build --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
