@@ -4,18 +4,6 @@ on:
   push:
   workflow_dispatch:
 
-env:
-  CI: true
-  TZ: Europe/Oslo
-  DEV_CLUSTER_NAME: atkv3-dev-user-cluster
-  DEV_KUBERNETES_PROJECT_ID: kubernetes-dev-94b9
-  DEV_SERVICE_ACCOUNT: matrikkel-deploy@matrikkel-dev-fd36.iam.gserviceaccount.com
-  DEV_WORKLOAD_IDENTITY_PROVIDER: projects/422604778482/locations/global/workloadIdentityPools/matrikkel-deploy-pool/providers/github-provider
-  PROD_CLUSTER_NAME: atkv3-prod-user-cluster
-  PROD_KUBERNETES_PROJECT_ID: kubernetes-prod-e4a2
-  PROD_SERVICE_ACCOUNT: matrikkel-deploy@matrikkel-prod-91b2.iam.gserviceaccount.com
-  PROD_WORKLOAD_IDENTITY_PROVIDER: projects/367207507054/locations/global/workloadIdentityPools/matrikkel-deploy-pool/providers/github-provider
-
 concurrency:
   group: main-${{ github.ref }}
   cancel-in-progress: true
@@ -67,6 +55,8 @@ jobs:
     needs:
       - version
       - test
+    outputs:
+      digest: ${{ steps.build-image.outputs.digest }}
     permissions:
       contents: write
       packages: write
@@ -75,24 +65,21 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Login to GitHub Container Registry
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Docker image
+        id: build-image
         uses: docker/build-push-action@v7
         env:
           image: ${{ needs.version.outputs.image }}
         with:
           context: .
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ env.image }}
-      - name: Tag commit med artifaktversjon
-        run: |
-          git tag ${{ needs.version.outputs.version }}
-          git push origin ${{ needs.version.outputs.version }}
 
   package-scheduler-image:
     name: Build and (conditionally) Push Docker SchedulerImage
@@ -100,6 +87,8 @@ jobs:
     needs:
       - version
       - test
+    outputs:
+      digest: ${{ steps.build-image.outputs.digest }}
     permissions:
       contents: read
       packages: write
@@ -108,7 +97,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Login to GitHub Container Registry
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
         uses: docker/login-action@v4.6.0
         with:
           registry: ghcr.io
@@ -116,12 +105,13 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
+        id: build-image
         uses: docker/build-push-action@v7
         env:
           image: ${{ needs.version.outputs.schedulerImage }}
         with:
           context: skipJobbScheduler/
-          push: ${{ github.ref == 'refs/heads/main' }}
+          push: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ env.image }}
 
   pharos:
@@ -133,9 +123,8 @@ jobs:
     uses: ./.github/workflows/sikkerhetsscanning_images.yml
 
   deploy-dev:
-    name: Deploy to Dev
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    name: Update Keycloak Version in Dev
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     needs:
       - version
       - package-image
@@ -143,135 +132,103 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
+    with:
+      application_name: matrikkel-keycloak
+      image_name: ${{ needs.version.outputs.image }}
+      image_tag: ${{ needs.version.outputs.version }}
+      image_digest: ${{ needs.package-image.outputs.digest }}
+      cluster: atkv3
+      env: dev
+      namespace: mat-brukeradmin-keycloak-dev
+      identity: matrikkel-keycloak
 
-    steps:
-      - name: Deploy matrikkel-keycloak to dev
-        uses: kartverket/matrikkel-actions/apps-repo-deploy@main
-        env:
-          version: ${{ needs.version.outputs.version }}
-        with:
-          apps: |
-            atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak:${{ env.version }}
-            atkv3-dev:matrikkel-keycloak-dev:matrikkel-keycloak-scheduler:${{ env.version }}
-          identity: 'matrikkel-keycloak'
-      - name: Verify deployment to dev
-        uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
-        with:
-          cluster: ${{ env.DEV_CLUSTER_NAME }}
-          apps: |
-            matrikkel-keycloak-dev:keycloak:${{ needs.version.outputs.version }}
-          includeStatefulSets: 'true'
-          kubernetes_project_id: ${{ env.DEV_KUBERNETES_PROJECT_ID }}
-          service_account: ${{ env.DEV_SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ env.DEV_WORKLOAD_IDENTITY_PROVIDER }}
-
-  deploy-qa:
-    name: Deploy to QA
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+  update-dev-scheduler:
+    name: Update Scheduler Version in Dev
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     needs:
       - version
-      - package-image
       - package-scheduler-image
       - deploy-dev
     permissions:
       id-token: write
       contents: read
+    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
+    with:
+      application_name: matrikkel-keycloak-scheduler
+      image_name: ${{ needs.version.outputs.schedulerImage }}
+      image_tag: ${{ needs.version.outputs.version }}
+      image_digest: ${{ needs.package-scheduler-image.outputs.digest }}
+      cluster: atkv3
+      env: dev
+      namespace: mat-brukeradmin-keycloak-dev
+      identity: matrikkel-keycloak
 
-    steps:
-      - name: Deploy matrikkel-keycloak to QA environments
-        uses: kartverket/matrikkel-actions/apps-repo-deploy@main
-        env:
-          version: ${{ needs.version.outputs.version }}
-        with:
-          apps: |
-            atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak:${{ env.version }}
-            atkv3-prod:matrikkel-keycloak-betatest:matrikkel-keycloak-scheduler:${{ env.version }}
-            atkv3-prod:matrikkel-keycloak-prodtest:matrikkel-keycloak:${{ env.version }}
-            atkv3-prod:matrikkel-keycloak-prodtest:matrikkel-keycloak-scheduler:${{ env.version }}
-          identity: 'matrikkel-keycloak'
-      - name: Verify deployment to QA
-        uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
-        with:
-          cluster: ${{ env.PROD_CLUSTER_NAME }}
-          apps: |
-            matrikkel-keycloak-betatest:keycloak:${{ needs.version.outputs.version }}
-            matrikkel-keycloak-prodtest:keycloak:${{ needs.version.outputs.version }}
-          includeStatefulSets: 'true'
-          kubernetes_project_id: ${{ env.PROD_KUBERNETES_PROJECT_ID }}
-          service_account: ${{ env.PROD_SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ env.PROD_WORKLOAD_IDENTITY_PROVIDER }}
+#  deploy-keycloak-betatest:
+#    name: Deploy Keycloak to Betatest
+#    if: github.ref == 'refs/heads/main'
+#    needs:
+#      - update-dev-scheduler
+#    permissions:
+#      id-token: write
+#      contents: read
+#    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+#    with:
+#      application_name: matrikkel-keycloak
+#      namespace_from: mat-brukeradmin-keycloak-dev
+#      namespace_to: mat-brukeradmin-keycloak-betatest
+#      cluster_from: atkv3-dev
+#      cluster_to: atkv3-prod
+#      identity: matrikkel-keycloak
+#
+#  deploy-scheduler-betatest:
+#    name: Deploy Scheduler to Betatest
+#    if: github.ref == 'refs/heads/main'
+#    needs:
+#      - deploy-keycloak-betatest
+#    permissions:
+#      id-token: write
+#      contents: read
+#    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+#    with:
+#      application_name: matrikkel-keycloak-scheduler
+#      namespace_from: mat-brukeradmin-keycloak-dev
+#      namespace_to: mat-brukeradmin-keycloak-betatest
+#      cluster_from: atkv3-dev
+#      cluster_to: atkv3-prod
+#      identity: matrikkel-keycloak
+#
+#  deploy-keycloak-prodtest:
+#    name: Deploy Keycloak to Prodtest
+#    if: github.ref == 'refs/heads/main'
+#    needs:
+#      - deploy-scheduler-betatest
+#    permissions:
+#      id-token: write
+#      contents: read
+#    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+#    with:
+#      application_name: matrikkel-keycloak
+#      namespace_from: mat-brukeradmin-keycloak-betatest
+#      namespace_to: mat-brukeradmin-keycloak-prodtest
+#      cluster_from: atkv3-prod
+#      cluster_to: atkv3-prod
+#      identity: matrikkel-keycloak
+#
+#  deploy-scheduler-prodtest:
+#    name: Deploy Scheduler to Prodtest
+#    if: github.ref == 'refs/heads/main'
+#    needs:
+#      - deploy-keycloak-prodtest
+#    permissions:
+#      id-token: write
+#      contents: read
+#    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+#    with:
+#      application_name: matrikkel-keycloak-scheduler
+#      namespace_from: mat-brukeradmin-keycloak-betatest
+#      namespace_to: mat-brukeradmin-keycloak-prodtest
+#      cluster_from: atkv3-prod
+#      cluster_to: atkv3-prod
+#      identity: matrikkel-keycloak
 
-  deploy-prod-notifier:
-    name: Slack Notify; Deploy to Production
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs:
-      - version
-      - package-image
-      - package-scheduler-image
-      - pharos
-      - deploy-qa
-    outputs:
-      messageId: ${{ steps.slack_notify.outputs.messageId }}
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-    steps:
-      - name: Notify slack (Setup)
-        id: slack_notify
-        uses: kartverket/matrikkel-actions/heimdall-approval-notifier/setup@main
-        with:
-          identity: 'matrikkel-keycloak'
-          environment: 'produksjon'
-          appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-  deploy-prod:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs:
-      - version
-      - deploy-prod-notifier
-    environment:
-      name: production
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-
-    steps:
-      - name: Notify slack (Update)
-        uses: kartverket/matrikkel-actions/heimdall-approval-notifier/update@main
-        with:
-          identity: 'matrikkel-keycloak'
-          environment: 'produksjon'
-          appDescriptor: atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ needs.version.outputs.version }}
-          messageId: ${{ needs.deploy-prod-notifier.outputs.messageId }}
-          status: ${{ job.status }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-      - name: Deploy matrikkel-keycloak to production
-        uses: kartverket/matrikkel-actions/apps-repo-deploy@main
-        env:
-          version: ${{ needs.version.outputs.version }}
-        with:
-          apps: |
-            atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak:${{ env.version }}
-            atkv3-prod:matrikkel-keycloak-prod:matrikkel-keycloak-scheduler:${{ env.version }}
-          identity: 'matrikkel-keycloak'
-      - name: Verify deployment to production
-        if: false # Disabler sjekken her mens vi venter på at vi kan skru på auto-sync i argo
-        uses: kartverket/matrikkel-actions/k8s-deployment-feedback@main
-        with:
-          cluster: ${{ env.PROD_CLUSTER_NAME }}
-          apps: |
-            matrikkel-keycloak-prod:keycloak:${{ needs.version.outputs.version }}
-          includeStatefulSets: 'true'
-          kubernetes_project_id: ${{ env.PROD_KUBERNETES_PROJECT_ID }}
-          service_account: ${{ env.PROD_SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ env.PROD_WORKLOAD_IDENTITY_PROVIDER }}

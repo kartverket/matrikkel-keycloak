@@ -21,8 +21,8 @@ jobs:
             fail-fast: false
             matrix:
                 package_name:
-                    - matrikkel-keycloak
-                    - matrikkel-keycloak-scheduler
+                    - mat-brukeradmin-keycloak
+                    - mat-brukeradmin-keycloak-scheduler
 
         steps:
             - name: Finn siste GHCR image-tag

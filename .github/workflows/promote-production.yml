@@ -1,0 +1,51 @@
+name: Promote version in Prodtest to Prod
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: promote-production
+  cancel-in-progress: false
+
+jobs:
+  approve-production:
+    name: Approve Production Promotion
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Production promotion approved
+        run: echo "Promoting the versions currently deployed to prodtest"
+
+  promote-keycloak:
+    name: Promote Keycloak to Production
+    needs:
+      - approve-production
+    permissions:
+      id-token: write
+      contents: read
+    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+    with:
+      application_name: matrikkel-keycloak
+      namespace_from: mat-brukeradmin-keycloak-prodtest
+      namespace_to: mat-brukeradmin-keycloak-prod
+      cluster_from: atkv3-prod
+      cluster_to: atkv3-prod
+      identity: matrikkel-keycloak
+
+  promote-scheduler:
+    name: Promote Scheduler to Production
+    needs:
+      - promote-keycloak
+    permissions:
+      id-token: write
+      contents: read
+    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+    with:
+      application_name: matrikkel-keycloak-scheduler
+      namespace_from: mat-brukeradmin-keycloak-prodtest
+      namespace_to: mat-brukeradmin-keycloak-prod
+      cluster_from: atkv3-prod
+      cluster_to: atkv3-prod
+      identity: matrikkel-keycloak
+
