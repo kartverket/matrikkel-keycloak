@@ -1,5 +1,5 @@
-# Denne koden forvaltes av: Team Heimdall
-# Dokumentasjon: https://kartverket.atlassian.net/wiki/spaces/HEIM/overview
+# Denne koden forvaltes av: Team Bygning
+# Dokumentasjon: https://kartverket.atlassian.net/wiki/spaces/BYGG/overview
 
 # Standard eierskap
-* @kartverket/matrikkel-core @kartverket/bygning
+* @kartverket/bygning
