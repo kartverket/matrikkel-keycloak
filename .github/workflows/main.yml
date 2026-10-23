@@ -135,7 +135,7 @@ jobs:
     uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
     with:
       application_name: matrikkel-keycloak
-      image_name: ${{ needs.version.outputs.image }}
+      image_name: ghcr.io/kartverket/matrikkel-keycloak
       image_tag: ${{ needs.version.outputs.version }}
       image_digest: ${{ needs.package-image.outputs.digest }}
       cluster: atkv3
@@ -143,7 +143,7 @@ jobs:
       namespace: mat-brukeradmin-keycloak-dev
       identity: matrikkel-keycloak
 
-  update-dev-scheduler:
+  deploy-dev-scheduler:
     name: Update Scheduler Version in Dev
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     needs:
@@ -156,7 +156,7 @@ jobs:
     uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
     with:
       application_name: matrikkel-keycloak-scheduler
-      image_name: ${{ needs.version.outputs.schedulerImage }}
+      image_name: ghcr.io/kartverket/matrikkel-keycloak-scheduler
       image_tag: ${{ needs.version.outputs.version }}
       image_digest: ${{ needs.package-scheduler-image.outputs.digest }}
       cluster: atkv3
