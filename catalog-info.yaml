@@ -1,28 +1,28 @@
-# nonk8s
-apiVersion: "backstage.io/v1alpha1"
-kind: "Component"
+apiVersion: backstage.io/v1alpha1
+kind: Component
 metadata:
-  name: "matrikkel-keycloak"
+  name: matrikkel-keycloak
   tags:
-    - "public"
+    - public
 spec:
-  type: "service"
-  lifecycle: "production"
-  owner: "group:default/bygning"
-  system: "m22"
+  type: service
+  lifecycle: production
+  owner: group:default/bygning
+  system: system:default/matrikkel-brukeradministrasjon
   providesApis:
-    - "matrikkel-keycloak-api"
+    - api:default/matrikkel-keycloak-api
+
 ---
-apiVersion: "backstage.io/v1alpha1"
-kind: "API"
+apiVersion: backstage.io/v1alpha1
+kind: API
 metadata:
-  name: "matrikkel-keycloak-api"
+  name: matrikkel-keycloak-api
   tags:
-    - "public"
+    - public
 spec:
-  type: "openapi"
-  lifecycle: "production"
-  owner: "bygning"
+  type: openapi
+  lifecycle: production
+  owner: bygning
   definition: |
     openapi: "3.0.0"
     info:
