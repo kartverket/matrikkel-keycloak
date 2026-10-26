@@ -40,7 +40,7 @@ dependencies {
 
 
     implementation "com.azure:azure-identity:1.18.7"
-    implementation "com.microsoft.graph:microsoft-graph:6.71.0"
+    implementation "com.microsoft.graph:microsoft-graph:6.72.0"
     implementation 'com.google.guava:guava:33.7.2-jre'
 
     // https://github.com/dasniko/testcontainers-keycloak
