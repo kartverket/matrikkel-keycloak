@@ -5,7 +5,7 @@ COPY ./extensions /extensions
 WORKDIR /extensions
 RUN ./gradlew --no-daemon build
 
-FROM ghcr.io/kartverket/emudhra-images/keycloak:26.8.1@sha256:316f1d4ec44d65606ea69dcf4d5fc112dd928028293722f0bf7f41001b006474 AS keycloak-builder
+FROM ghcr.io/kartverket/emudhra-images/keycloak:26.8.1@sha256:7d78d373f376db97e38d04b23adef817282ecfb9dcd2bd7908b7416f12f22d4b AS keycloak-builder
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
@@ -29,7 +29,7 @@ RUN chmod +r-w opt/keycloak/providers/*
 USER keycloak
 RUN /opt/keycloak/bin/kc.sh build --spi-email-sender--oauth-email-provider--enabled=true --spi-email-sender--provider-default=oauth-email-provider
 
-FROM ghcr.io/kartverket/emudhra-images/keycloak:26.8.1@sha256:316f1d4ec44d65606ea69dcf4d5fc112dd928028293722f0bf7f41001b006474
+FROM ghcr.io/kartverket/emudhra-images/keycloak:26.8.1@sha256:7d78d373f376db97e38d04b23adef817282ecfb9dcd2bd7908b7416f12f22d4b
 # SKIP runs all containers with UID 150
 COPY --from=keycloak-builder --chown=150:150 /opt/keycloak/ /opt/keycloak/
 
