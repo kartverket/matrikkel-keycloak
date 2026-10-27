@@ -17,13 +17,14 @@ RUN wget -O /ojdbc17.jar \
       https://github.com/aerogear/keycloak-metrics-spi/releases/download/7.0.0/keycloak-metrics-spi-7.0.0.jar
 
 
-FROM dhi.io/keycloak:26@sha256:56956e02ba899e6f9a8ed4bf67755f8906194db76be92b22e4d01fe059169f74
+FROM ghcr.io/kartverket/emudhra-images/keycloak/dhi:26@sha256:7ec228edab34f6938db5d6f720dc601f873be9d6ce17fe7546ba8797854786a8
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
     KC_METRICS_ENABLED=true \
     KC_HTTP_RELATIVE_PATH='/auth' \
-    TZ=Europe/Oslo
+    TZ=Europe/Oslo \
+    KC_SPI_BRUTE_FORCE_PROTECTOR__DEFAULT_BRUTE_FORCE_DETECTOR__ALLOW_CONCURRENT_REQUESTS=true
 
 # Copy providers with correct ownership for the keycloak non-root user (uid 65532)
 COPY --from=extensions-builder --chown=65532:65532 /extensions/build/libs/matrikkel-keycloak-extension-all.jar /opt/keycloak/providers/matrikkel-keycloak-extension.jar
