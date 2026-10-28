@@ -1,6 +1,14 @@
 version: 2
+registries:
+  dockerhub-hardened-images:
+    type: docker-registry
+    url: https://dhi.io
+    username: ${{ secrets.DOCKERHUB_USERNAME }}
+    password: ${{ secrets.DOCKERHUB_TOKEN }}
 updates:
   - package-ecosystem: docker
+    registries:
+      - docker-hardened-images
     directories:
       - "/"
       - "/skipJobbScheduler"
