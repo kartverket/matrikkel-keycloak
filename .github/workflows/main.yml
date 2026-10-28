@@ -148,7 +148,7 @@ jobs:
     needs:
       - version
       - package-image
-      - deploy-keycloak-dev
+      - deploy-scheduler-dev
     permissions:
       id-token: write
       contents: read
