@@ -8,7 +8,7 @@ registries:
 updates:
   - package-ecosystem: docker
     registries:
-      - docker-hardened-images
+      - dockerhub-hardened-images
     directories:
       - "/"
       - "/skipJobbScheduler"
