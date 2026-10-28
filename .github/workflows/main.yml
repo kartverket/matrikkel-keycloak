@@ -90,7 +90,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.ref == 'main' || github.event_name == 'workflow_dispatch' }}
+          push: ${{ github.ref_name == 'main' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ env.IMAGE_NAME }}:${{ needs.version.outputs.new_version }}
 
       - name: Build Scheduler Docker image
@@ -98,12 +98,12 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: skipJobbScheduler/
-          push: ${{ github.ref == 'main' || github.event_name == 'workflow_dispatch' }}
+          push: ${{ github.ref_name == 'main' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ env.SCHEDULER_IMAGE_NAME }}:${{ needs.version.outputs.new_version }}
 
   deploy-keycloak-dev:
     name: Deploy Keycloak to Dev
-    if: github.ref == 'main' || github.event_name == 'workflow_dispatch'
+    if: github.ref_name == 'main' || github.event_name == 'workflow_dispatch'
     needs:
       - version
       - package-image
@@ -123,10 +123,11 @@ jobs:
 
   deploy-scheduler-dev:
     name: Deploy Scheduler to Dev
-    if: github.ref == 'main' || github.event_name == 'workflow_dispatch'
+    if: github.ref_name == 'main' || github.event_name == 'workflow_dispatch'
     needs:
       - version
       - package-image
+      - deploy-keycloak-dev
     permissions:
       id-token: write
       contents: read
@@ -145,6 +146,8 @@ jobs:
     name: Deploy Keycloak to Betatest
     if: github.event_name == 'push' && github.ref_name == 'main'
     needs:
+      - version
+      - package-image
       - deploy-keycloak-dev
     permissions:
       id-token: write
@@ -164,7 +167,9 @@ jobs:
     name: Deploy Scheduler to Betatest
     if: github.event_name == 'push' && github.ref_name == 'main'
     needs:
-      - deploy-scheduler-dev
+      - version
+      - package-image
+      - deploy-keycloak-betatest
     permissions:
       id-token: write
       contents: read
@@ -183,7 +188,9 @@ jobs:
     name: Deploy Keycloak to Prodtest
     if: github.event_name == 'push' && github.ref_name == 'main'
     needs:
-      - deploy-keycloak-betatest
+      - version
+      - package-image
+      - deploy-scheduler-betatest
     permissions:
       id-token: write
       contents: read
@@ -202,7 +209,9 @@ jobs:
     name: Deploy Scheduler to Prodtest
     if: github.event_name == 'push' && github.ref_name == 'main'
     needs:
-      - deploy-scheduler-betatest
+      - version
+      - package-image
+      - deploy-keycloak-prodtest
     permissions:
       id-token: write
       contents: read
