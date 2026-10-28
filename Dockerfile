@@ -34,6 +34,7 @@ COPY --from=jar-downloader --chown=65532:65532 /keycloak-metrics-spi.jar /opt/ke
 COPY --from=jar-downloader --chown=65532:65532 /ojdbc17.jar /opt/keycloak/providers/ojdbc17.jar
 COPY --from=jar-downloader --chown=65532:65532 /orai18n.jar /opt/keycloak/providers/orai18n.jar
 
+USER nonroot
 RUN /opt/keycloak/bin/kc.sh build --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
