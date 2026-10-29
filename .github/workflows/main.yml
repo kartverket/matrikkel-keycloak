@@ -251,10 +251,6 @@ jobs:
         with:
           trivy_category: 'matrikkel-keycloak'
           image_url: ${{ needs.package-image.outputs.image_name }}@${{ needs.package-image.outputs.image_digest }}
-          trivy_vex : true
-          trivy_vex_provider: dhi
-          docker_username: ${{ vars.DOCKERHUB_USERNAME }}
-          docker_token: ${{ secrets.DOCKERHUB_TOKEN }}
           disable_severity_check: true
 
   run-pharos-scheduler:
@@ -274,8 +270,4 @@ jobs:
         with:
           trivy_category: 'matrikkel-keycloak-scheduler'
           image_url: ${{ needs.package-image.outputs.scheduler_image_name }}@${{ needs.package-image.outputs.scheduler_image_digest }}
-          trivy_vex: true
-          trivy_vex_provider: dhi
-          docker_username: ${{ vars.DOCKERHUB_USERNAME }}
-          docker_token: ${{ secrets.DOCKERHUB_TOKEN }}
           disable_severity_check: true
