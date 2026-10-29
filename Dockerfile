@@ -23,8 +23,9 @@ ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
     KC_METRICS_ENABLED=true \
     KC_HTTP_RELATIVE_PATH='/auth' \
-    TZ=Europe/Oslo \
-    KC_SPI_BRUTE_FORCE_PROTECTOR__DEFAULT_BRUTE_FORCE_DETECTOR__ALLOW_CONCURRENT_REQUESTS=true
+    KC_SPI_BRUTE_FORCE_PROTECTOR__DEFAULT_BRUTE_FORCE_DETECTOR__ALLOW_CONCURRENT_REQUESTS=true \
+    KC_SPI_STICKY_SESSION_ENCODER__INFINISPAN__SHOULD_ATTACH_ROUTE=false \
+    TZ=Europe/Oslo
 
 # Copy providers with correct ownership for the keycloak non-root user (uid 65532)
 COPY --from=extensions-builder --chown=65532:65532 /extensions/build/libs/matrikkel-keycloak-extension-all.jar /opt/keycloak/providers/matrikkel-keycloak-extension.jar
@@ -35,6 +36,9 @@ COPY --from=jar-downloader --chown=65532:65532 /ojdbc17.jar /opt/keycloak/provid
 COPY --from=jar-downloader --chown=65532:65532 /orai18n.jar /opt/keycloak/providers/orai18n.jar
 
 USER nonroot
-RUN /opt/keycloak/bin/kc.sh build --spi-email-sender-provider-oauth-email-provider-enabled=true --spi-email-sender-provider=oauth-email-provider
+RUN /opt/keycloak/bin/kc.sh build \
+      --spi-email-sender--oauth-email-provider--enabled=true \
+      --spi-email-sender--provider=oauth-email-provider \
+      --features-disabled=twitter-broker,identity-brokering-api
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized"]
