@@ -32,7 +32,19 @@ public class OauthEmailSenderProvider implements EmailSenderProvider {
         sendMailPostRequestBody.setMessage(createMessage(subject, address, textBody, htmlBody));
         sendMailPostRequestBody.setSaveToSentItems(false);
 
-        graphServiceClient.users().byUserId(userId).sendMail().post(sendMailPostRequestBody);
+        try {
+            graphServiceClient.users().byUserId(userId).sendMail().post(sendMailPostRequestBody);
+        } catch (ODataError e) {
+            String code = e.getError() != null ? e.getError().getCode() : null;
+            String message = e.getError() != null ? e.getError().getMessage() : e.getMessage();
+            logger.errorf(e, "MS Graph sendMail failed: status=%d, code=%s, message=%s",
+                    e.getResponseStatusCode(), code, message);
+            throw new EmailException(String.format("MS Graph sendMail failed: status=%d, code=%s, message=%s",
+                    e.getResponseStatusCode(), code, message), e);
+        } catch (RuntimeException e) {
+            logger.errorf(e, "MS Graph sendMail failed: %s", e.getMessage());
+            throw new EmailException("MS Graph sendMail failed: " + e.getMessage(), e);
+        }
         logger.debug("Email sent using OauthEmailSenderProvider");
     }
 
