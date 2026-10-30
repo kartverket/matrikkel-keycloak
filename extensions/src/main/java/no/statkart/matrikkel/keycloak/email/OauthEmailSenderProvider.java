@@ -1,6 +1,7 @@
 package no.statkart.matrikkel.keycloak.email;
 
 import com.microsoft.graph.models.*;
+import com.microsoft.graph.models.odataerrors.ODataError;
 import com.microsoft.graph.serviceclient.GraphServiceClient;
 import com.microsoft.graph.users.item.sendmail.SendMailPostRequestBody;
 import org.jboss.logging.Logger;
