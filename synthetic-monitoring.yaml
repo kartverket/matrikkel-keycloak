@@ -1,0 +1,44 @@
+- targets:
+    - https://kc-betatest.matrikkel.no/auth/realms/matrikkelen-test
+  labels:
+    team: bygning
+    env: betatest
+    service: matrikkel-keycloak
+
+- targets:
+    - https://kc-betatest-matrikkel-admin.atkv3-prod.kartverket-intern.cloud/auth/realms/matrikkelen-test
+  labels:
+    team: bygning
+    env: betatest
+    service: matrikkel-keycloak
+    internal: true
+
+- targets:
+    - https://kc-prodtest.matrikkel.no/auth/realms/matrikkelen-test
+  labels:
+    team: bygning
+    env: prodtest
+    service: matrikkel-keycloak
+
+- targets:
+    - https://kc-prodtest-matrikkel-admin.atkv3-prod.kartverket-intern.cloud/auth/realms/matrikkelen-test
+  labels:
+    team: bygning
+    env: prodtest
+    service: matrikkel-keycloak
+    internal: true
+
+- targets:
+    - https://auth.matrikkel.no/auth/realms/matrikkelen-prod
+  labels:
+    team: bygning
+    env: prod
+    service: matrikkel-keycloak
+
+- targets:
+    - https://kc-matrikkel-admin.atkv3-prod.kartverket-intern.cloud/auth/realms/matrikkelen-prod
+  labels:
+    team: bygning
+    env: prod
+    service: matrikkel-keycloak
+    internal: true
