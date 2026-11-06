@@ -1,0 +1,19 @@
+name: Validate Synthetic Monitoring Config
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - synthetic-monitoring.yaml
+  pull_request:
+    paths:
+      - synthetic-monitoring.yaml
+
+jobs:
+  call-synthetic-monitoring:
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    uses: kartverket/github-workflows/.github/workflows/synthetic-monitoring.yaml@17f2ec02676e584a2d1a7c50e330f96395e2c351 # v5.1.1
