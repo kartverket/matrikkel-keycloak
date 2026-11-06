@@ -271,3 +271,5 @@ jobs:
           trivy_category: 'matrikkel-keycloak-scheduler'
           image_url: ${{ needs.package-image.outputs.scheduler_image_name }}@${{ needs.package-image.outputs.scheduler_image_digest }}
           disable_severity_check: true
+          trivy_vex: true
+          trivy_vex_provider: dhi
