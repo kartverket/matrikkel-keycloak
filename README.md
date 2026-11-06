@@ -101,18 +101,20 @@ ENV TOKEN_ENDPOINT="<MILJØ>/auth/realms/<REALM>/protocol/openid-connect/token"
 ENV JOB_ENDPOINT="<MILJØ>/auth/realms/<REALM>/tasks/send-reminder"
 ```
 
-PS: For keycloak lokalt må en gjøre disse innstillingene via admin-guiet:
-```
-1. Opprette client 'matrikkel-realm-management'. Huk BORT alt på 'Capability config' -> 'Client authentication' og 'Authentication flow'
-2. Under fanen 'Roles' skal det opprettes en ny rolle. Rollen må hete 'send-reminder-email'
-3. Opprette en ny client 'schedule-job' 
-4. Under settings på clienten må 'Client authentication' være PÅ. 'Authentication flow' skal også bare ha 'Service accounts roles' avhuket.
-5. Under fanen 'Client scopes' skal 'roles' være den eneste som har configurasjonen 'Default'. De resterende skal være 'Optional' eller 'none'
-6. Under fanen 'Service account roles' må vi legge til rollen vi opprettet over. Assign role -> Filter by clients ->  'matrikkel-realm-management - send-reminder-email'
-7. Sett deretter inn clientsecret som variable under 'ENV CLIENT_SECRET'
-```
+Klientene `schedule-job` og `matrikkel-realm-management` (med klientrollen `send-reminder-email`) er definert i
+[realm-config](realm-config/README.md) og opprettes av config-jobben. De skal ikke settes opp manuelt i Admin GUI.
+Secreten til `schedule-job` ligger i GSM og injiseres som `SCHEDULE_JOB_CLIENT_SECRET`.
+Lokalt får man klientene ved å kjøre round-trip-skriptet som er beskrevet i realm-config.
+
 ## AD-innlogging kobling
 
-For innlogging av interne kartverksbrukere ved hjelp av Azure AD er det satt opp en Aure Active Directory Applikasjon. Her er det blandt annet registrert redirect urler for Keycloak.
-Denne integrasjonen er satt vha. click-ops og er avhengige av en secret under Configure -> Identity Providers -> Kartverket (Azure AD) -> Client ID/Secret, navn på applikasjonen i Azure er: KV - MatrikkelKeyCloak. 
-Verdi for secreten finnes i Dashlane og ny secret kan bestilles gjennom Pureservice.
+For innlogging av interne kartverksbrukere ved hjelp av Azure AD er det satt opp en Azure Active Directory-applikasjon, `KV - MatrikkelKeyCloak`.
+Der er blant annet redirect-URL-ene for Keycloak registrert.
+Identity provideren (Kartverket (Azure AD)) er definert i [realm-config](realm-config/README.md). Client secreten ligger i GSM,
+og Keycloak leser den gjennom den filbaserte vaulten (`${vault.idp-<alias>-client-secret}`). Ny secret bestilles gjennom Pureservice og legges inn i GSM.
+
+## Realm-konfigurasjon
+
+Realm-konfigurasjonen (realm-innstillinger, roller, client scopes, flows, klienter, IdP-er og grupper) forvaltes som kode i
+[`realm-config/`](realm-config/README.md). Den appliseres med keycloak-config-cli fra pipeline. Konfigurasjon endres med PR, ikke i Admin GUI.
+README-en der beskriver endringsprosess, migrering, secrets, break-glass, drift-deteksjon og lokal kjøring.

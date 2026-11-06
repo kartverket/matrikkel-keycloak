@@ -2,3 +2,8 @@
 .gradle/
 build/
 gradle.properties
+
+# realm-config: råeksporter og rendret output skal aldri i Git
+realm-config/raw/*
+!realm-config/raw/README.md
+realm-config/build/

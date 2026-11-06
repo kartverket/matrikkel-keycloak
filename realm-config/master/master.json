@@ -1,0 +1,71 @@
+{
+  "realm": "master",
+  "clients": [
+    {
+      "clientId": "matrikkel-keycloak-config",
+      "name": "keycloak-config-cli apply-klient (IaC)",
+      "description": "Brukes kun av SKIPJob matrikkel-keycloak-config og drift-jobben. Secret ligger i GSM.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "bearerOnly": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "$(env:KEYCLOAK_CONFIG_CLIENT_SECRET)",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "username": "service-account-matrikkel-keycloak-config",
+      "enabled": true,
+      "serviceAccountClientId": "matrikkel-keycloak-config",
+      "clientRoles": {
+        "$(env:REALM_NAME)-realm": [
+          "view-realm",
+          "manage-realm",
+          "view-clients",
+          "manage-clients",
+          "query-clients",
+          "view-identity-providers",
+          "manage-identity-providers",
+          "view-authorization",
+          "manage-authorization",
+          "view-events",
+          "manage-events",
+          "view-users",
+          "query-users",
+          "query-groups",
+          "manage-users"
+        ]
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "matrikkel-readonly-admins",
+      "attributes": {
+        "beskrivelse": [
+          "Personlige admin-kontoer: kan lese konfigurasjon og administrere brukere, men ikke endre realm-konfigurasjon (den eies av Git)."
+        ]
+      },
+      "clientRoles": {
+        "$(env:REALM_NAME)-realm": [
+          "view-realm",
+          "view-clients",
+          "view-identity-providers",
+          "view-authorization",
+          "view-events",
+          "view-users",
+          "query-users",
+          "query-groups",
+          "query-clients",
+          "manage-users"
+        ]
+      }
+    }
+  ]
+}

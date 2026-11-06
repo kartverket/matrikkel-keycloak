@@ -1,0 +1,19 @@
+# Forklarte avvik som BARE gjelder CI round-trip (realmen opprettes fra scratch med `seed`).
+# Brukes i tillegg til diff-ignore.txt av scripts/roundtrip.sh. Gjelder IKKE drift-jobben i miljøene.
+# Format som diff-ignore.txt. Prefiks '+ ' betyr: ignorer bare når feltet KUN finnes i faktisk (KC-standardverdi),
+# ikke når verdien er endret.
+# REGEL: Hver linje skal ha en kommentar som forklarer hvorfor avviket er akseptert.
+
+# Keycloak setter "+" (= samme som redirect URIs) når en klient OPPRETTES. Eldre klienter i miljøene mangler feltet,
+# og config-cli oppdaterer dem bare, så feltet oppstår ikke der.
++ clients[*]/attributes/post.logout.redirect.uris
+
+# Nye realmer får standardverdier for security headers som eldre (oppgraderte) realmer ikke har.
++ browserSecurityHeaders/*
+
+# Nye realmer får en locale-mapper på security-admin-console.
++ clients[security-admin-console]/protocolMappers
+
+# Keycloak 26 legger automatisk til scope 'service_account' når en klient med service account OPPRETTES.
+# Klienter i miljøene som ble opprettet før KC 26, mangler den.
+~ clients[*]/defaultClientScopes

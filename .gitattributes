@@ -2,3 +2,5 @@
 # These are explicitly windows files and should use crlf
 *.[bB][aA][tT]        eol=crlf
 *.[cC][mM][dD]        eol=crlf
+# Shell-skript kjøres i Linux-containere/CI
+*.sh                  text eol=lf

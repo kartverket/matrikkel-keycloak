@@ -1,0 +1,280 @@
+{
+  "clientScopeMappings": {
+    "account": [
+      {
+        "client": "account-console",
+        "roles": [
+          "manage-account",
+          "view-groups"
+        ]
+      },
+      {
+        "client": "gha-keycloakcleanup",
+        "roles": [
+          "delete-account",
+          "manage-account"
+        ]
+      }
+    ],
+    "matrikkel-realm-management": [
+      {
+        "client": "schedule-job",
+        "roles": [
+          "scheduled-task-admin",
+          "send-reminder-email"
+        ]
+      }
+    ],
+    "realm-management": [
+      {
+        "client": "c10136",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "e2b3faa3-2a8b-4cdf-84da-2d34bdd0cb49",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "gha-keycloakcleanup",
+        "roles": [
+          "view-users"
+        ]
+      },
+      {
+        "client": "jenkins",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "matrikkel-dev",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "matrikkel-test-eksterne",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "releasetest",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "testgruppe",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      }
+    ]
+  },
+  "defaultRole": {
+    "clientRole": false,
+    "composite": true,
+    "description": "${role_default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483}",
+    "name": "default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483"
+  },
+  "roles": {
+    "client": {
+      "account": [
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "${role_delete-account}",
+          "name": "delete-account"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": true,
+          "composites": {
+            "client": {
+              "account": [
+                "manage-account-links"
+              ]
+            }
+          },
+          "description": "${role_manage-account}",
+          "name": "manage-account"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "${role_manage-account-links}",
+          "name": "manage-account-links"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": true,
+          "composites": {
+            "client": {
+              "account": [
+                "view-consent"
+              ]
+            }
+          },
+          "description": "${role_manage-consent}",
+          "name": "manage-consent"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "${role_view-applications}",
+          "name": "view-applications"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "${role_view-consent}",
+          "name": "view-consent"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "${role_view-groups}",
+          "name": "view-groups"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "${role_view-profile}",
+          "name": "view-profile"
+        }
+      ],
+      "account-console": [],
+      "admin-cli": [],
+      "broker": [
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "${role_read-token}",
+          "name": "read-token"
+        }
+      ],
+      "c10136": [
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "name": "uma_protection"
+        }
+      ],
+      "c84f2d91-7a36-4e5b-9c12-8f3a6d7e41b0": [],
+      "e2b3faa3-2a8b-4cdf-84da-2d34bdd0cb49": [],
+      "gha-keycloakcleanup": [],
+      "github": [],
+      "jenkins": [],
+      "jwt-test-client": [],
+      "matrikkel-dev": [],
+      "matrikkel-realm-management": [
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "description": "scheduled-task-admin",
+          "name": "scheduled-task-admin"
+        },
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "name": "send-reminder-email"
+        }
+      ],
+      "matrikkel-test-eksterne": [],
+      "matrikkel-token-exchange": [],
+      "matrikkelklient": [
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "name": "uma_protection"
+        }
+      ],
+      "person-api": [],
+      "prodtest": [],
+      "releasetest": [
+        {
+          "attributes": {},
+          "clientRole": true,
+          "composite": false,
+          "name": "uma_protection"
+        }
+      ],
+      "schedule-job": [],
+      "security-admin-console": [],
+      "taaosfjaof": [],
+      "testgruppe": [],
+      "tokenValidator": []
+    },
+    "realm": [
+      {
+        "attributes": {},
+        "clientRole": false,
+        "composite": true,
+        "composites": {
+          "client": {
+            "account": [
+              "view-applications",
+              "view-consent",
+              "view-profile"
+            ]
+          }
+        },
+        "description": "${role_default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483}",
+        "name": "default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483"
+      },
+      {
+        "attributes": {},
+        "clientRole": false,
+        "composite": false,
+        "description": "${role_offline-access}",
+        "name": "offline_access"
+      },
+      {
+        "attributes": {},
+        "clientRole": false,
+        "composite": false,
+        "description": "${role_uma_authorization}",
+        "name": "uma_authorization"
+      }
+    ]
+  },
+  "scopeMappings": [
+    {
+      "client": "account-console",
+      "roles": [
+        "default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483"
+      ]
+    },
+    {
+      "clientScope": "offline_access",
+      "roles": [
+        "offline_access"
+      ]
+    }
+  ]
+}

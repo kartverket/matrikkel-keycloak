@@ -1,0 +1,20 @@
+# Forklarte avvik mellom forventet (rendret fra Git) og faktisk (partial export fra Keycloak).
+# Brukes av: CI round-trip, nattlig drift-jobb og migrerings-sammenligning mot prod.
+# Format: mønster mot avviksstien som `kcconfig.py diff` skriver ut. Kun '*' er jokertegn.
+# REGEL: Hver linje skal ha en kommentar som forklarer HVORFOR avviket er akseptert.
+
+# Secrets maskeres alltid (**********) i partial export, mens Git har $(env:...)/${vault.x}.
+clients[*]/secret
+identityProviders[*]/config/clientSecret
+smtpServer/password
+
+# Realm-nøkler forvaltes av Keycloak og ligger bevisst ikke i Git.
+components/org.keycloak.keys.KeyProvider
+components/org.keycloak.keys.KeyProvider[*]
+
+# Skrivebeskyttet, avledet av providerId (KC 26.5+). Ukjent for keycloak-config-cli 6.5.1, fjernes av sanitize.
+identityProviders[*]/types
+
+# Systemklient og innebygde admin-roller som eies av Keycloak. Fjernes av sanitize: config-cli får 403 på secret/rolle-oppdatering.
+clients[realm-management]
+roles/client/realm-management

@@ -1,0 +1,141 @@
+{
+  "identityProviderMappers": [
+    {
+      "config": {
+        "attribute": "idp",
+        "attribute.value": "{\"name\":\"idporten-test\",\"description\":\"ID-porten TEST\",\"frontchannel_logout\":\"https://oidc-ver2.difi.no/idporten-oidc-provider/endsession\"}",
+        "syncMode": "INHERIT"
+      },
+      "identityProviderAlias": "idporten-test",
+      "identityProviderMapper": "hardcoded-user-session-attribute-idp-mapper",
+      "name": "idp"
+    },
+    {
+      "config": {
+        "syncMode": "INHERIT",
+        "target": "BROKER_ID",
+        "template": "${CLAIM.pid}"
+      },
+      "identityProviderAlias": "idporten-test",
+      "identityProviderMapper": "oidc-username-idp-mapper",
+      "name": "pid-user-id"
+    },
+    {
+      "config": {
+        "syncMode": "INHERIT",
+        "target": "BROKER_USERNAME",
+        "template": "${CLAIM.pid}"
+      },
+      "identityProviderAlias": "idporten-test",
+      "identityProviderMapper": "oidc-username-idp-mapper",
+      "name": "pid-user-name"
+    }
+  ],
+  "identityProviders": [
+    {
+      "addReadTokenRoleOnCreate": false,
+      "alias": "idporten-test",
+      "authenticateByDefault": false,
+      "config": {
+        "acceptsPromptNoneForwardFromClient": "false",
+        "allowedClockSkew": "300",
+        "authorizationUrl": "https://login.test.idporten.no/authorize",
+        "backchannelSupported": "false",
+        "caseSensitiveOriginalUsername": "false",
+        "clientAuthMethod": "client_secret_basic",
+        "clientId": "4194281e-8330-48e9-b9ec-318b9bcee6d7",
+        "clientSecret": "${vault.idp-idporten-test-client-secret}",
+        "defaultScope": "openid",
+        "disableNonce": "false",
+        "disableUserInfo": "true",
+        "filteredByClaim": "false",
+        "isAccessTokenJWT": "false",
+        "issuer": "https://test.idporten.no",
+        "jwksUrl": "https://test.idporten.no/jwks.json",
+        "loginHint": "true",
+        "logoutUrl": "https://login.test.idporten.no/endsession",
+        "passMaxAge": "false",
+        "pkceEnabled": "true",
+        "pkceMethod": "S256",
+        "sendClientIdOnLogout": "false",
+        "sendIdTokenOnLogout": "true",
+        "syncMode": "IMPORT",
+        "tokenUrl": "https://test.idporten.no/token",
+        "uiLocales": "true",
+        "useJwksUrl": "true",
+        "userInfoUrl": "https://test.idporten.no/userinfo",
+        "validateSignature": "true"
+      },
+      "displayName": "ID-porten TEST",
+      "enabled": true,
+      "firstBrokerLoginFlowAlias": "matrikkel-first-broker",
+      "hideOnLogin": false,
+      "linkOnly": false,
+      "postBrokerLoginFlowAlias": "Matrikkel-validate",
+      "providerId": "oidc",
+      "storeToken": false,
+      "trustEmail": false
+    },
+    {
+      "addReadTokenRoleOnCreate": false,
+      "alias": "kartverket",
+      "authenticateByDefault": false,
+      "config": {
+        "acceptsPromptNoneForwardFromClient": "false",
+        "allowedClockSkew": "300",
+        "authorizationUrl": "https://login.microsoftonline.com/7f74c8a2-43ce-46b2-b0e8-b6306cba73a3/oauth2/v2.0/authorize",
+        "backchannelSupported": "false",
+        "clientAuthMethod": "client_secret_basic",
+        "clientId": "eef0f241-5e13-4ecb-b230-74cf2e552356",
+        "clientSecret": "${vault.idp-kartverket-client-secret}",
+        "disableNonce": "false",
+        "disableUserInfo": "true",
+        "filteredByClaim": "false",
+        "isAccessTokenJWT": "false",
+        "issuer": "https://login.microsoftonline.com/7f74c8a2-43ce-46b2-b0e8-b6306cba73a3/v2.0",
+        "jwksUrl": "https://login.microsoftonline.com/7f74c8a2-43ce-46b2-b0e8-b6306cba73a3/discovery/v2.0/keys",
+        "loginHint": "false",
+        "passMaxAge": "false",
+        "pkceEnabled": "true",
+        "pkceMethod": "S256",
+        "sendClientIdOnLogout": "false",
+        "sendIdTokenOnLogout": "true",
+        "syncMode": "IMPORT",
+        "tokenUrl": "https://login.microsoftonline.com/7f74c8a2-43ce-46b2-b0e8-b6306cba73a3/oauth2/v2.0/token",
+        "uiLocales": "true",
+        "useJwksUrl": "true",
+        "userInfoUrl": "https://graph.microsoft.com/oidc/userinfo",
+        "validateSignature": "true"
+      },
+      "displayName": "Kartverket (Azure AD)",
+      "enabled": true,
+      "firstBrokerLoginFlowAlias": "matrikkel-first-broker",
+      "hideOnLogin": false,
+      "linkOnly": false,
+      "postBrokerLoginFlowAlias": "Matrikkel-validate",
+      "providerId": "flow-return-oidc",
+      "storeToken": false,
+      "trustEmail": false
+    },
+    {
+      "addReadTokenRoleOnCreate": false,
+      "alias": "microsoft",
+      "authenticateByDefault": false,
+      "config": {
+        "clientId": "5e1ed8b5-82ea-4fa1-9480-2c40e9d470c7",
+        "clientSecret": "${vault.idp-microsoft-client-secret}",
+        "disableUserInfo": "true",
+        "syncMode": "IMPORT",
+        "useJwksUrl": "true"
+      },
+      "enabled": false,
+      "firstBrokerLoginFlowAlias": "matrikkel-first-broker",
+      "hideOnLogin": false,
+      "linkOnly": false,
+      "postBrokerLoginFlowAlias": "Matrikkel-validate",
+      "providerId": "microsoft",
+      "storeToken": false,
+      "trustEmail": false
+    }
+  ]
+}

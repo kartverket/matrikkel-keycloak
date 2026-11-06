@@ -49,3 +49,37 @@ jobs:
       cluster_to: atkv3-prod
       identity: matrikkel-keycloak
 
+  # Realm-konfigurasjon som kode (realm-config/). Aktiveres med repo-variabelen REALM_CONFIG_DEPLOY=true.
+  promote-config:
+    name: Promote Config to Production
+    if: vars.REALM_CONFIG_DEPLOY == 'true'
+    needs:
+      - promote-keycloak
+    permissions:
+      id-token: write
+      contents: read
+    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+    with:
+      application_name: matrikkel-keycloak-config
+      namespace_from: mat-brukeradmin-keycloak-prodtest
+      namespace_to: mat-brukeradmin-keycloak-prod
+      cluster_from: atkv3-prod
+      cluster_to: atkv3-prod
+      identity: matrikkel-keycloak
+
+  promote-config-drift:
+    name: Promote Config Drift to Production
+    if: vars.REALM_CONFIG_DEPLOY == 'true'
+    needs:
+      - promote-keycloak
+    permissions:
+      id-token: write
+      contents: read
+    uses: kartverket/bygning-github-workflows/.github/workflows/promote-app.yaml@main
+    with:
+      application_name: matrikkel-keycloak-config-drift
+      namespace_from: mat-brukeradmin-keycloak-prodtest
+      namespace_to: mat-brukeradmin-keycloak-prod
+      cluster_from: atkv3-prod
+      cluster_to: atkv3-prod
+      identity: matrikkel-keycloak
