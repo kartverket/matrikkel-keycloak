@@ -15,7 +15,7 @@ RUN wget -O /ojdbc17.jar \
       https://repo1.maven.org/maven2/com/oracle/database/nls/orai18n/23.8.0.25.04/orai18n-23.8.0.25.04.jar
 
 
-FROM ghcr.io/kartverket/emudhra-images/keycloak/dhi:26@sha256:7ec228edab34f6938db5d6f720dc601f873be9d6ce17fe7546ba8797854786a8
+FROM dhi.io/keycloak:26@sha256:ba20b9bd0ecd48047240249acaff19aa882db5480a03659fcdf14d4b7bd9d424
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
@@ -24,6 +24,7 @@ ENV KC_DB=$KC_DB \
     KC_HTTP_RELATIVE_PATH='/auth' \
     KC_SPI_BRUTE_FORCE_PROTECTOR__DEFAULT_BRUTE_FORCE_DETECTOR__ALLOW_CONCURRENT_REQUESTS=true \
     KC_SPI_STICKY_SESSION_ENCODER__INFINISPAN__SHOULD_ATTACH_ROUTE=false \
+    KC_SPI_ADMIN__AUDIENCE_CHECK_ENABLED=false \
     TZ=Europe/Oslo
 
 # Copy providers with correct ownership for the keycloak non-root user (uid 65532)
