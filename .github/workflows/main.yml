@@ -22,6 +22,10 @@ env:
   IMAGE_NAME: ghcr.io/kartverket/matrikkel-keycloak
   SCHEDULER_IMAGE_NAME: ghcr.io/kartverket/matrikkel-keycloak-scheduler
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   version:
     name: Calculate Version
@@ -44,6 +48,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 21
         uses: actions/setup-java@v6
@@ -109,130 +115,247 @@ jobs:
           push: ${{ github.ref_name == 'main' || github.event_name == 'workflow_dispatch' }}
           tags: ${{ env.SCHEDULER_IMAGE_NAME }}:${{ needs.version.outputs.new_version }}
 
-  deploy-keycloak-dev:
-    name: Deploy Keycloak to Dev
+  tag-release:
+    name: "Tag commit med artifaktversjon"
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
+    needs:
+      - version
+      - package-image
+    permissions:
+      contents: write
+    steps:
+      - name: "Create git tag"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEW_VERSION: ${{ needs.version.outputs.new_version }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f "ref=refs/tags/${NEW_VERSION}" \
+            -f "sha=${GITHUB_SHA}"
+
+  deploy-dev:
+    name: "Deploy to dev"
+    runs-on: ubuntu-latest
     if: github.ref_name == 'main' || github.event_name == 'workflow_dispatch'
     needs:
       - version
       - package-image
     permissions:
-      id-token: write
+      actions: read
       contents: read
-    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
-    with:
-      application_name: matrikkel-keycloak
-      image_name: ${{ needs.package-image.outputs.image_name }}
-      image_tag: ${{ needs.version.outputs.new_version }}
-      image_digest: ${{ needs.package-image.outputs.image_digest }}
-      cluster: atkv3
-      env: dev
-      namespace: mat-brukeradmin-keycloak-dev
-      identity: matrikkel-keycloak
+      id-token: write
+    env:
+      version: ${{ needs.version.outputs.new_version }}
+    steps:
+      - name: "Update apps repo keycloak (dev)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-dev
+          namespace: mat-brukeradmin-keycloak-dev
+          image_name: ${{ needs.package-image.outputs.image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.image_digest }}
+          application_name: matrikkel-keycloak
+          identity: matrikkel-keycloak
+      - name: "Update apps repo keycloak scheduler (dev)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-dev
+          namespace: mat-brukeradmin-keycloak-dev
+          image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
+          application_name: matrikkel-keycloak-scheduler
+          identity: matrikkel-keycloak
+      - name: "Verify deployment to DEV"
+        uses: kartverket/bygning-github-workflows/bygning-k8s-deployment-feedback@main
+        with:
+          cluster: atkv3-dev
+          apps: |
+            mat-brukeradmin-keycloak-dev:matrikkel-keycloak:${{ env.version }}
 
-  deploy-scheduler-dev:
-    name: Deploy Scheduler to Dev
-    if: github.ref_name == 'main' || github.event_name == 'workflow_dispatch'
+  deploy-betatest-prodtest:
+    name: "Deploy to betatest/prodtest"
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
     needs:
       - version
       - package-image
-      - deploy-keycloak-dev
+      - tag-release
     permissions:
-      id-token: write
+      actions: read
       contents: read
-    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
-    with:
-      application_name: matrikkel-keycloak-scheduler
-      image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
-      image_tag: ${{ needs.version.outputs.new_version }}
-      image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
-      cluster: atkv3
-      env: dev
-      namespace: mat-brukeradmin-keycloak-dev
-      identity: matrikkel-keycloak
+      id-token: write
+    env:
+      version: ${{ needs.version.outputs.new_version }}
+    steps:
+      - name: "Update apps repo keycloak (betatest)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-prod
+          namespace: mat-brukeradmin-keycloak-betatest
+          image_name: ${{ needs.package-image.outputs.image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.image_digest }}
+          application_name: matrikkel-keycloak
+          identity: matrikkel-keycloak
+      - name: "Update apps repo keycloak scheduler (betatest)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-prod
+          namespace: mat-brukeradmin-keycloak-betatest
+          image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
+          application_name: matrikkel-keycloak-scheduler
+          identity: matrikkel-keycloak
+      - name: "Update apps repo keycloak (prodtest)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-prod
+          namespace: mat-brukeradmin-keycloak-prodtest
+          image_name: ${{ needs.package-image.outputs.image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.image_digest }}
+          application_name: matrikkel-keycloak
+          identity: matrikkel-keycloak
+      - name: "Update apps repo keycloak scheduler (prodtest)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-prod
+          namespace: mat-brukeradmin-keycloak-prodtest
+          image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
+          application_name: matrikkel-keycloak-scheduler
+          identity: matrikkel-keycloak
+      - name: "Verify deployment to betatest/prodtest"
+        uses: kartverket/bygning-github-workflows/bygning-k8s-deployment-feedback@main
+        with:
+          cluster: atkv3-prod
+          apps: |
+            mat-brukeradmin-keycloak-betatest:matrikkel-keycloak:${{ env.version }}
+            mat-brukeradmin-keycloak-prodtest:matrikkel-keycloak:${{ env.version }}
 
-  deploy-keycloak-betatest:
-    name: Deploy Keycloak to Betatest
-    if: github.event_name == 'push' && github.ref_name == 'main'
+  deploy-prod-notifier:
+    name: "Slack Notify: Deployment to prod"
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
     needs:
       - version
       - package-image
-      - deploy-scheduler-dev
-    permissions:
-      id-token: write
-      contents: read
-    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
-    with:
-      application_name: matrikkel-keycloak
-      image_name: ${{ needs.package-image.outputs.image_name }}
-      image_tag: ${{ needs.version.outputs.new_version }}
-      image_digest: ${{ needs.package-image.outputs.image_digest }}
-      cluster: atkv3
-      env: prod
-      namespace: mat-brukeradmin-keycloak-betatest
-      identity: matrikkel-keycloak
+      - deploy-betatest-prodtest
+    env:
+      version: ${{ needs.version.outputs.new_version }}
+    outputs:
+      messageId: ${{ steps.slack_notify.outputs.messageId }}
+    steps:
+      - name: "Slack Notify: Deployment to prod"
+        id: slack_notify
+        uses: kartverket/bygning-github-workflows/bygning-approval-notifier/setup@main
+        with:
+          identity: matrikkel-keycloak
+          environment: prod
+          appDescriptor: atkv3-prod:mat-brukeradmin-keycloak-prod:matrikkel-keycloak:${{ env.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
-  deploy-scheduler-betatest:
-    name: Deploy Scheduler to Betatest
-    if: github.event_name == 'push' && github.ref_name == 'main'
+  deploy-prod:
+    name: "Deploy to prod"
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
     needs:
       - version
       - package-image
-      - deploy-keycloak-betatest
+      - deploy-prod-notifier
     permissions:
-      id-token: write
+      actions: read
       contents: read
-    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
-    with:
-      application_name: matrikkel-keycloak-scheduler
-      image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
-      image_tag: ${{ needs.version.outputs.new_version }}
-      image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
-      cluster: atkv3
-      env: prod
-      namespace: mat-brukeradmin-keycloak-betatest
-      identity: matrikkel-keycloak
+      id-token: write
+    environment:
+      name: production
+    env:
+      version: ${{ needs.version.outputs.new_version }}
+    steps:
+      - name: "Slack Notify: Deployment to prod (Update)"
+        uses: kartverket/bygning-github-workflows/bygning-approval-notifier/update@main
+        with:
+          identity: matrikkel-keycloak
+          environment: "prod"
+          appDescriptor: atkv3-prod:mat-brukeradmin-keycloak-prod:matrikkel-keycloak:${{ env.version }}
+          messageId: ${{ needs.deploy-prod-notifier.outputs.messageId }}
+          status: ${{ job.status }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: "Update apps repo keycloak (prod)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-prod
+          namespace: mat-brukeradmin-keycloak-prod
+          image_name: ${{ needs.package-image.outputs.image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.image_digest }}
+          application_name: matrikkel-keycloak
+          identity: matrikkel-keycloak
+      - name: "Update apps repo keycloak scheduler (prod)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atkv3-prod
+          namespace: mat-brukeradmin-keycloak-prod
+          image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
+          application_name: matrikkel-keycloak-scheduler
+          identity: matrikkel-keycloak
+      - name: "Verify deployment to prod"
+        uses: kartverket/bygning-github-workflows/bygning-k8s-deployment-feedback@main
+        with:
+          cluster: atkv3-prod
+          apps: |
+            mat-brukeradmin-keycloak-prod:matrikkel-keycloak:${{ env.version }}
 
-  deploy-keycloak-prodtest:
-    name: Deploy Keycloak to Prodtest
-    if: github.event_name == 'push' && github.ref_name == 'main'
+  deploy-svg:
+    name: "Deploy to prod (stavanger)"
+    runs-on: ubuntu-latest
+    if: github.ref_name == 'main'
     needs:
       - version
       - package-image
-      - deploy-scheduler-betatest
+      - deploy-prod
     permissions:
-      id-token: write
+      actions: read
       contents: read
-    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
-    with:
-      application_name: matrikkel-keycloak
-      image_name: ${{ needs.package-image.outputs.image_name }}
-      image_tag: ${{ needs.version.outputs.new_version }}
-      image_digest: ${{ needs.package-image.outputs.image_digest }}
-      cluster: atkv3
-      env: prod
-      namespace: mat-brukeradmin-keycloak-prodtest
-      identity: matrikkel-keycloak
-
-  deploy-scheduler-prodtest:
-    name: Deploy Scheduler to Prodtest
-    if: github.event_name == 'push' && github.ref_name == 'main'
-    needs:
-      - version
-      - package-image
-      - deploy-keycloak-prodtest
-    permissions:
       id-token: write
-      contents: read
-    uses: kartverket/bygning-github-workflows/.github/workflows/update-app-version.yaml@main
-    with:
-      application_name: matrikkel-keycloak-scheduler
-      image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
-      image_tag: ${{ needs.version.outputs.new_version }}
-      image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
-      cluster: atkv3
-      env: prod
-      namespace: mat-brukeradmin-keycloak-prodtest
-      identity: matrikkel-keycloak
+    env:
+      version: ${{ needs.version.outputs.new_version }}
+    steps:
+      - name: "Update apps repo keycloak (prod stavanger)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atsvg3-prod
+          namespace: mat-brukeradmin-keycloak-katastrofe
+          image_name: ${{ needs.package-image.outputs.image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.image_digest }}
+          application_name: matrikkel-keycloak
+          identity: matrikkel-keycloak
+      - name: "Update apps repo keycloak scheduler (prod stavanger)"
+        uses: kartverket/bygning-github-workflows/apps-repo-deploy@main
+        with:
+          cluster: atsvg3-prod
+          namespace: mat-brukeradmin-keycloak-katastrofe
+          image_name: ${{ needs.package-image.outputs.scheduler_image_name }}
+          image_tag: ${{ needs.version.outputs.new_version }}
+          image_digest: ${{ needs.package-image.outputs.scheduler_image_digest }}
+          application_name: matrikkel-keycloak-scheduler
+          identity: matrikkel-keycloak
 
   run-pharos:
     needs:
@@ -246,7 +369,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - name: "Run Pharos"
+      - name: "Run Pharos keycloak"
         uses: kartverket/pharos@aee5b200a4bb042954127dd1446408d2841fcc29 # v0.7.1
         with:
           trivy_category: 'matrikkel-keycloak'
@@ -265,7 +388,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - name: "Run Pharos"
+      - name: "Run Pharos keycloak scheduler"
         uses: kartverket/pharos@aee5b200a4bb042954127dd1446408d2841fcc29 # v0.7.1
         with:
           trivy_category: 'matrikkel-keycloak-scheduler'
