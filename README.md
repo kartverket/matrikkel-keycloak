@@ -11,7 +11,7 @@ med det ferdig bygde docker imaget.
 [`Dockerfile`](Dockerfile) inneholder definisjonen av docker imaget som bygges og kjøres på SKIP. Det er basert på et standard keycloak image,
 men bygges med et par ulike custom providers.
 
-Når dette docker imaget bygges, blir også de custom extensions bygget i tillegg til en annen tredjeparts provider: [keycloak metrics spi](https://github.com/aerogear/keycloak-metrics-spi)
+Når dette docker imaget bygges, blir også de custom extensions bygget. Metrikker eksponeres via Keycloak sine innebygde metrikker (`KC_METRICS_ENABLED`).
 
 ## Bygging og kjøring lokalt
 
