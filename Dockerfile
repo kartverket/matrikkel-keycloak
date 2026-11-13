@@ -24,7 +24,6 @@ ENV KC_DB=$KC_DB \
     KC_HTTP_RELATIVE_PATH='/auth' \
     KC_SPI_BRUTE_FORCE_PROTECTOR__DEFAULT_BRUTE_FORCE_DETECTOR__ALLOW_CONCURRENT_REQUESTS=true \
     KC_SPI_STICKY_SESSION_ENCODER__INFINISPAN__SHOULD_ATTACH_ROUTE=false \
-    KC_SPI_ADMIN__AUDIENCE_CHECK_ENABLED=false \
     TZ=Europe/Oslo
 
 # Copy providers with correct ownership for the keycloak non-root user (uid 65532)
