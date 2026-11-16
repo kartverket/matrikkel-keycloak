@@ -2,3 +2,7 @@
 .gradle/
 build/
 gradle.properties
+
+# Lokal test av realm-config: eksporter og snapshots inneholder miljødata
+realm-config/local/
+*.snapshot.json

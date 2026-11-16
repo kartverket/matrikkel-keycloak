@@ -116,3 +116,9 @@ PS: For keycloak lokalt må en gjøre disse innstillingene via admin-guiet:
 For innlogging av interne kartverksbrukere ved hjelp av Azure AD er det satt opp en Aure Active Directory Applikasjon. Her er det blandt annet registrert redirect urler for Keycloak.
 Denne integrasjonen er satt vha. click-ops og er avhengige av en secret under Configure -> Identity Providers -> Kartverket (Azure AD) -> Client ID/Secret, navn på applikasjonen i Azure er: KV - MatrikkelKeyCloak. 
 Verdi for secreten finnes i Dashlane og ny secret kan bestilles gjennom Pureservice.
+
+## Realm-konfigurasjon som kode
+
+Realm-konfigurasjonen skal forvaltes som kode i [`realm-config/`](realm-config/README.md) og appliseres med
+keycloak-config-cli som en SKIPJob. Foreløpig er bare pipelinen og et skjelett for dev på plass. Se README-en der.
+
