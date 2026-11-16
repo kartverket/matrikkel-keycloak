@@ -172,6 +172,7 @@ jobs:
         uses: kartverket/bygning-github-workflows/bygning-k8s-deployment-feedback@main
         with:
           cluster: atkv3-dev
+          includeStatefulSets: 'true'
           apps: |
             mat-brukeradmin-keycloak-dev:matrikkel-keycloak:${{ env.version }}
 
@@ -234,6 +235,7 @@ jobs:
         uses: kartverket/bygning-github-workflows/bygning-k8s-deployment-feedback@main
         with:
           cluster: atkv3-prod
+          includeStatefulSets: 'true'
           apps: |
             mat-brukeradmin-keycloak-betatest:matrikkel-keycloak:${{ env.version }}
             mat-brukeradmin-keycloak-prodtest:matrikkel-keycloak:${{ env.version }}
@@ -318,6 +320,7 @@ jobs:
         uses: kartverket/bygning-github-workflows/bygning-k8s-deployment-feedback@main
         with:
           cluster: atkv3-prod
+          includeStatefulSets: 'true'
           apps: |
             mat-brukeradmin-keycloak-prod:matrikkel-keycloak:${{ env.version }}
 
