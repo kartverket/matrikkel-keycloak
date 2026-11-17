@@ -174,7 +174,7 @@ jobs:
           cluster: atkv3-dev
           includeStatefulSets: 'true'
           apps: |
-            mat-brukeradmin-keycloak-dev:matrikkel-keycloak:${{ env.version }}
+            mat-brukeradmin-keycloak-dev:keycloak:${{ env.version }}
 
   deploy-betatest-prodtest:
     name: "Deploy to betatest/prodtest"
@@ -237,8 +237,8 @@ jobs:
           cluster: atkv3-prod
           includeStatefulSets: 'true'
           apps: |
-            mat-brukeradmin-keycloak-betatest:matrikkel-keycloak:${{ env.version }}
-            mat-brukeradmin-keycloak-prodtest:matrikkel-keycloak:${{ env.version }}
+            mat-brukeradmin-keycloak-betatest:keycloak:${{ env.version }}
+            mat-brukeradmin-keycloak-prodtest:keycloak:${{ env.version }}
 
   deploy-prod-notifier:
     name: "Slack Notify: Deployment to prod"
@@ -322,7 +322,7 @@ jobs:
           cluster: atkv3-prod
           includeStatefulSets: 'true'
           apps: |
-            mat-brukeradmin-keycloak-prod:matrikkel-keycloak:${{ env.version }}
+            mat-brukeradmin-keycloak-prod:keycloak:${{ env.version }}
 
   deploy-svg:
     name: "Deploy to prod (stavanger)"
