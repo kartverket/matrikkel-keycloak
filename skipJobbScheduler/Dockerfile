@@ -1,5 +1,5 @@
 # Build stage: DHI dev-variant (inneholder shell og pip) for å installere avhengigheter
-FROM dhi.io/python:3.15-debian13-dev@sha256:3e432059c740e935dab8baac6baafb9c611315ace74cd283c86ac9e11e296c23 AS builder
+FROM dhi.io/python:3.15-debian13-dev@sha256:646b70e80c246911c8e31f732a8ba0c014c90abef5a1459a9c9f8a2ca0227bb1 AS builder
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ RUN python -m venv --without-pip /app/venv \
     && pip --python /app/venv/bin/python install --no-cache-dir requests
 
 # Runtime stage: minimal DHI runtime-variant (uten shell og pakkehåndterer)
-FROM dhi.io/python:3.15-debian13@sha256:0f22f5388fbb8e2b6457c4f0b9964d99000a288bae0f845e0f5989ed7033c7bf
+FROM dhi.io/python:3.15-debian13@sha256:d90203ad5dd6c0d9fe58efd6347795375b3f5f2430be2bf61573510452f718e5
 
 # Link rep to pushed image
 LABEL org.opencontainers.image.source=https://github.com/kartverket/matrikkel-keycloak
