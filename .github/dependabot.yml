@@ -13,13 +13,16 @@ updates:
       - "/"
       - "/skipJobbScheduler"
     schedule:
-      interval: daily
+      interval: weekly
+      day: sunday
   - package-ecosystem: github-actions
     directory: ".github/workflows"
     schedule:
-      interval: daily
+      interval: weekly
+      day: sunday
   - package-ecosystem: gradle
     directory: "/extensions"
     schedule:
-      interval: daily
+      interval: weekly
+      day: sunday
     open-pull-requests-limit: 10
