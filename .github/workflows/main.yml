@@ -184,6 +184,7 @@ jobs:
       - version
       - package-image
       - tag-release
+      - deploy-dev
     permissions:
       actions: read
       contents: read
