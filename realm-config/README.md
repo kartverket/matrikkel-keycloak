@@ -108,6 +108,8 @@ klient i master-realmen, ikke en personlig konto og ikke master-admin.
 | Secret | Tilfeldig streng (`openssl rand -hex 32`) i GSM som `kc-<miljø>-realm-config-client-secret`. Bootstrap setter den på klienten, og jobben får den som `KEYCLOAK_CLIENTSECRET` via ExternalSecret. |
 | Risiko | Den som har secreten, kan endre alt i realmen. Derfor ligger den bare i GSM. |
 | Rotasjon | Ny verdi i GSM, kjør bootstrap på nytt, og restart ExternalSecret-synken. |
+| Full scope | Av (`fullScopeAllowed: false`). Tokenet får bare rollene i `clientScopeMappings`, og Admin API krever at rollen både er tildelt og innenfor scope. En ny rolle må derfor legges inn både i `clientRoles` og i `clientScopeMappings` i `master.json`, ellers svarer API-et 403. |
+| Client scope `kc-admin-api` | Må være default scope. Siden 18.11.2026 sjekker Keycloak audience i admin-tokens (`KC_SPI_ADMIN__AUDIENCE_CHECK_ENABLED` er ikke lenger `false`). Scopet legger `<frontend-url>/admin/realms/master` i `aud`. Uten det svarer Admin API 401 på alt, og jobben logger «Server info check failed with 401» til den gir opp. |
 
 Hvorfor en egen klient:
 - Jobben kan kjøre uten personlige kontoer, passord eller MFA.
