@@ -15,7 +15,7 @@ RUN wget -O /ojdbc17.jar \
       https://repo1.maven.org/maven2/com/oracle/database/nls/orai18n/23.8.0.25.04/orai18n-23.8.0.25.04.jar
 
 
-FROM dhi.io/keycloak:26@sha256:ba20b9bd0ecd48047240249acaff19aa882db5480a03659fcdf14d4b7bd9d424
+FROM dhi.io/keycloak:26@sha256:90fa13349e49716e3fedc5e59837b6db009e924594102e54836975f5bbf1779e
 ARG KC_DB=oracle
 ENV KC_DB=$KC_DB \
     KC_HEALTH_ENABLED=true \
