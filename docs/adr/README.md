@@ -13,6 +13,7 @@ vurdert, og hvorfor. Én markdown-fil per beslutning, nummerert fortløpende.
 | [0006](0006-gradvis-innforing-med-no-op-forst.md) | Gradvis innføring: første kjøring er no-op, verifisert lokalt | Akseptert |
 | [0007](0007-idp-er-utenfor-config-inntil-vault.md) | Identity providers holdes utenfor configen inntil vault er på plass | Akseptert (midlertidig) |
 | [0008](0008-egen-workflow-for-realm-config-kun-dev.md) | Egen workflow for realm-config, foreløpig bare dev | Akseptert |
+| [0009](0009-config-per-miljo-base-og-resources.md) | Config per miljø med base og resources, én fil per ressurstype | Akseptert |
 
 ## Ny ADR
 

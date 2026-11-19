@@ -9,6 +9,7 @@ on:
       - 'realm-config/**'
       - '!realm-config/**/*.md'
       - '!realm-config/scripts/**'
+      - 'realm-config/scripts/check.py'
       - '.github/workflows/realm-config.yml'
   pull_request:
     branches:
@@ -24,6 +25,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check:
+    name: Check for secrets and personal data
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # Se realm-config/README.md, «Hva som ikke skal i Git»
+      - name: Run check.py
+        run: python3 realm-config/scripts/check.py
+
   version:
     name: Calculate Version
     runs-on: ubuntu-latest
@@ -42,6 +57,7 @@ jobs:
     name: Build and (conditionally) Push Config Image
     runs-on: ubuntu-latest
     needs:
+      - check
       - version
     outputs:
       config_image_name: ${{ env.CONFIG_IMAGE_NAME }}
