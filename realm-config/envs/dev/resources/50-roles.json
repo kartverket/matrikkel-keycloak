@@ -1,0 +1,78 @@
+{
+  "realm": "matrikkelen-test",
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483",
+        "description": "${role_default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483}",
+        "composite": true,
+        "composites": {
+          "client": {
+            "account": [
+              "view-applications",
+              "view-profile",
+              "view-consent"
+            ]
+          }
+        },
+        "clientRole": false,
+        "attributes": {}
+      },
+      {
+        "name": "offline_access",
+        "description": "${role_offline-access}",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      },
+      {
+        "name": "uma_authorization",
+        "description": "${role_uma_authorization}",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      }
+    ],
+    "client": {
+      "c10136": [
+        {
+          "name": "uma_protection",
+          "composite": false,
+          "clientRole": true,
+          "attributes": {}
+        }
+      ],
+      "matrikkel-realm-management": [
+        {
+          "name": "scheduled-task-admin",
+          "description": "scheduled-task-admin",
+          "composite": false,
+          "clientRole": true,
+          "attributes": {}
+        },
+        {
+          "name": "send-reminder-email",
+          "composite": false,
+          "clientRole": true,
+          "attributes": {}
+        }
+      ],
+      "matrikkelklient": [
+        {
+          "name": "uma_protection",
+          "composite": false,
+          "clientRole": true,
+          "attributes": {}
+        }
+      ],
+      "releasetest": [
+        {
+          "name": "uma_protection",
+          "composite": false,
+          "clientRole": true,
+          "attributes": {}
+        }
+      ]
+    }
+  }
+}

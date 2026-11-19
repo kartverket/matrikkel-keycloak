@@ -1,0 +1,101 @@
+{
+  "realm": "matrikkelen-test",
+  "scopeMappings": [
+    {
+      "client": "account-console",
+      "roles": [
+        "default-roles-f4c052b3-08fd-4f0b-9c94-4efd66002483"
+      ]
+    },
+    {
+      "clientScope": "offline_access",
+      "roles": [
+        "offline_access"
+      ]
+    }
+  ],
+  "clientScopeMappings": {
+    "account": [
+      {
+        "client": "account-console",
+        "roles": [
+          "manage-account",
+          "view-groups"
+        ]
+      },
+      {
+        "client": "gha-keycloakcleanup",
+        "roles": [
+          "manage-account",
+          "delete-account"
+        ]
+      }
+    ],
+    "matrikkel-realm-management": [
+      {
+        "client": "schedule-job",
+        "roles": [
+          "scheduled-task-admin",
+          "send-reminder-email"
+        ]
+      }
+    ],
+    "realm-management": [
+      {
+        "client": "c10136",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "e2b3faa3-2a8b-4cdf-84da-2d34bdd0cb49",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "gha-keycloakcleanup",
+        "roles": [
+          "view-users"
+        ]
+      },
+      {
+        "client": "jenkins",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "matrikkel-dev",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "matrikkel-test-eksterne",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "releasetest",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      },
+      {
+        "client": "testgruppe",
+        "roles": [
+          "manage-users",
+          "view-users"
+        ]
+      }
+    ]
+  }
+}

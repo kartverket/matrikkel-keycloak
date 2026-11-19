@@ -1,19 +1,67 @@
 # realm-config – Keycloak-konfigurasjon som kode
 
 Realm-konfigurasjonen appliseres med [keycloak-config-cli](https://github.com/adorsys/keycloak-config-cli)
-som en SKIPJob. Foreløpig inneholder `envs/dev/realm.json` bare realm-navnet og dev-verdien for
-`oauth2DevicePollingInterval`. Jobben logger inn og kjører, men endrer ingenting (verifisert lokalt mot et
-snapshot av dev). Uten `oauth2DevicePollingInterval` ville jobben satt feltet tilbake til standardverdien 5.
-Hele dev-configen tas inn i neste steg (se «Fra eksport til config» under).
+som en SKIPJob. `envs/dev/` inneholder hele dev-configen unntatt identity providers, delt opp i én fil per
+ressurstype. Alle typer kjører med `no-delete`. Lokalt mot et snapshot av dev er jobben no-op, bortsett fra
+de forventede endringene under «Fra eksport til config».
 
 Begrunnelsen for valgene står i [`docs/adr/`](../docs/adr/README.md).
 
 ```
 realm-config/
-├── Dockerfile           keycloak-config-cli (bygget mot vår Keycloak-versjon) + envs/ og master/
-├── envs/<miljø>/*.json  konfigurasjon per miljø, i samme format som en realm-eksport
-└── master/master.json   bootstrap av apply-klienten i master-realmen (kjøres manuelt)
+├── Dockerfile                    keycloak-config-cli (bygget mot vår Keycloak-versjon) + envs/ og master/
+├── envs/<miljø>/
+│   ├── base/realm.json           realm-innstillinger for miljøet
+│   └── resources/NN-<type>.json  én fil per ressurstype (se under)
+├── master/master.json            bootstrap av apply-klienten i master-realmen (kjøres manuelt)
+└── scripts/                      split.py (migrering), check.py (CI-sjekk), lokal-test.sh og diff.py (lokal no-op-test)
 ```
+
+Hvert miljø har sin egen komplette config. Ingenting deles mellom miljøene. Foreløpig finnes bare `envs/dev/`.
+
+### Filer per miljø
+
+| Fil | Innhold | `IMPORT_MANAGED_*` |
+|---|---|---|
+| `resources/20-client-scopes.json` | `clientScopes`, default (optional) client scopes for realmen | `CLIENTSCOPE` |
+| `resources/30-authentication-flows.json` | egne flows (`builtIn=false`), `authenticatorConfig` som de bruker, flow-bindinger | `AUTHENTICATIONFLOW` |
+| `resources/35-required-actions.json` | `requiredActions` | `REQUIREDACTION` |
+| `resources/40-clients.json` | egne klienter, med protocol mappers og flow-overrides (alias) | `CLIENT`, `CLIENTAUTHORIZATION*` |
+| `resources/50-roles.json` | realm-roller og klientroller for egne klienter | `ROLE` |
+| `resources/60-scope-mappings.json` | `scopeMappings`, `clientScopeMappings` | `SCOPEMAPPING`, `CLIENTSCOPEMAPPING` |
+| `resources/70-service-accounts.json` | service-account-brukere med rolle- og gruppetildelinger | (ingen, brukere har ikke state) |
+| `resources/75-groups.json` | grupper (lages bare når miljøet har grupper, dev har ingen) | `GROUP` |
+| `resources/80-components.json` | komponenter unntatt realm-nøkler og user profile | `COMPONENT`, `SUBCOMPONENT` |
+| `resources/85-user-profile.json` | `userProfile` | (ingen) |
+| (senere) `resources/45-identity-providers.json` | `identityProviders`, `identityProviderMappers` | `IDENTITYPROVIDER*` |
+| `base/realm.json` | realm-innstillinger og -attributter | (ingen) |
+
+Regler:
+
+- **Én ressurstype i nøyaktig én fil.** config-cli lagrer remote state per type, og state-lista erstattes for
+  hver fil. To filer med samme type ville slettet hverandres ressurser i `full`-modus.
+- **Prefiksene (20, 30, 35 …) styrer rekkefølgen.** Filene i `resources/` importeres alfabetisk, så client
+  scopes og flows finnes før klientene som bruker dem, og klientene før klientrollene. Hullene gir plass til
+  nye typer uten å endre navn på de andre.
+- **`base/` importeres etter `resources/`.** Rekkefølgen står i `IMPORT_FILES_LOCATIONS` i `Dockerfile`. Hver
+  fil gjør en realm-oppdatering, og Keycloak setter for eksempel `oauth2DevicePollingInterval` tilbake til 5
+  når feltet mangler. Siste fil bestemmer verdien.
+- **Git er fasit.** Endringer gjøres i filene her og går gjennom PR. Vi eksporterer ikke fra Keycloak og
+  genererer på nytt. Opprydding (testrester o.l.) gjøres også som endringer i filene.
+- **Aldri secrets, realm-nøkler, ID-er eller personlige brukere i filene.** Se «Hva som ikke skal i Git» under.
+
+### Migrering av et miljø (én gang per miljø)
+
+`envs/dev/` er generert fra en eksport av dev 19.11.2026 og er slik dev var da. `split.py` brukes bare til å
+ta inn et nytt miljø (prodtest, prod) første gang:
+
+```bash
+# Fra rota av repoet. Eksporten tas med Partial export (grupper, roller og klienter) i Admin GUI.
+PYTHONIOENCODING=utf-8 python realm-config/scripts/split.py prodtest.snapshot.json realm-config/envs/prodtest
+```
+
+Skriptet skriver ut `OBS`-linjer for alt det utelater som ikke er rutine (ubrukte authenticator-configer,
+ukjente komponenter og IdP-er).
 
 ## Hvorfor SKIPJob og ikke GitHub Action
 
@@ -58,43 +106,83 @@ varsler om avviket.
 config-cli bruker `full` som standard. Imaget setter derfor alle `IMPORT_MANAGED_*` til `no-delete`, og
 `full` slås på eksplisitt per ressurstype.
 
+## Hva som ikke skal i Git
+
+Repoet er offentlig. Gjelder både migrering og alle senere endringer i `envs/`:
+
+| Aldri i Git | Slik løses det i stedet |
+|---|---|
+| Klient-secrets (`secret` på klienter) | Eies av Keycloak, eller `$(env:...)` fra GSM via ExternalSecret i config-jobben. |
+| IdP- og SMTP-secrets (`clientSecret`, `smtpServer.password`) | `${vault.x}`: GSM → ExternalSecret → fil i Keycloak-podden. |
+| Realm-nøkler (`org.keycloak.keys.KeyProvider`) | Eies av Keycloak i hvert miljø. |
+| Personlige brukere og persondata (navn, e-post, fødselsnummer) | Brukere administreres i Keycloak. Bare service accounts i `70-service-accounts.json`. |
+| ID-er og tidsstempler (`id`, `containerId`, `createdTimestamp` …) | Ressurser refereres med navn/alias. |
+| config-cli-state (`de.adorsys.keycloak.config.*`) | Skrives av config-cli i Keycloak. |
+
+Ved migrering fjerner `split.py` dette automatisk (konstantene øverst i skriptet). Ved senere endringer
+stopper `scripts/check.py` PR-en (første jobb i `realm-config.yml`). Kjør den lokalt før du pusher:
+
+```bash
+PYTHONIOENCODING=utf-8 python realm-config/scripts/check.py
+```
+
+Sjekken fanger secrets i klartekst (alt annet enn `$(env:...)` og `${vault.x}`), maskerte secrets, realm-nøkler,
+ID-er, config-cli-state, personlige brukere, e-postadresser (unntatt `ALLOWED_EMAILS`) og 11-sifrede tall.
+Den fanger ikke alt, så PR-review gjelder fortsatt.
+
 ## Fra eksport til config: funn fra dev
 
-En rå realm-eksport (Partial export) kan ikke appliseres direkte. Testet lokalt ved å importere en eksport fra
-dev med Keycloaks egen import og deretter kjøre config-jobben med en renset versjon av eksporten. Den rensede
-versjonen er ikke committet ennå.
-
-Må fjernes eller endres i eksporten før den kan brukes:
+En rå realm-eksport (Partial export) kan ikke appliseres direkte. `scripts/split.py` gjør dette ved migrering:
 
 | Hva | Hvorfor |
 |---|---|
-| `id`, `containerId`, `createdTimestamp`, `de.adorsys.*`-attributter, `keycloakVersion` | Miljøspesifikt eller generert. |
-| Maskerte secrets (`**********`) | Ellers blir secreten satt til nettopp denne strengen. |
+| `id`, `internalId`, `containerId`, `createdTimestamp`, `notBefore`, `keycloakVersion`, `defaultRole` | Miljøspesifikt eller generert. `defaultRole` heter `default-roles-<realm-id>`. |
+| Realm-attributtene `de.adorsys.keycloak.config.*` og `*.lastExecutionTime` | State fra config-cli og kjøretidsdata. |
+| `secret` og `client.secret.*`-attributter på klienter | Eksporten maskerer secreten (`**********`). Klient-secrets eies av Keycloak. |
 | `components."org.keycloak.keys.KeyProvider"` | Realm-nøkler skal ikke i Git. |
-| Klientene `broker` og `realm-management`, inkludert rollene deres | Innebygde klienter (`realm_client=true`). Keycloak 26 avviser endringer med 403, også fra admin. |
-| Komponenten «Default Roles Disabled» (`providerId: default-roles`) | Provideren finnes ikke i vårt image. Rester i dev som bør ryddes bort der. |
-| Authenticator-configer som ingen execution bruker (`test-bajs`) | config-cli avviser dem. |
-| `authenticationFlowBindingOverrides` med flow-ID | Byttes til flow-alias, siden ID-ene er ulike i hvert miljø. |
-| `attributes."client.secret.creation.time"` på klienter | Metadata om klient-secreten, som eies av Keycloak. Ellers setter jobben tilbake tidspunktet. |
-| `identityProviders` og `identityProviderMappers` | Midlertidig. Se IdP-secrets under. |
+| Innebygde klienter (`account`, `account-console`, `admin-cli`, `broker`, `realm-management`, `security-admin-console`) og rollene deres | Keycloak lager dem selv. `broker` og `realm-management` avvises med 403, også fra admin. |
+| Innebygde flows (`builtIn=true`) | Keycloak lager dem selv. `Browser - Conditional OTP` og `First broker login - Conditional OTP` finnes bare i eldre realms og kan ikke opprettes. |
+| Authenticator-configer som ingen egen flow bruker (`test-bajs` m.fl.) | config-cli avviser dem. |
+| Komponenten «Default Roles Disabled» (`providerId: default-roles`) | Provideren finnes ikke i imaget vårt. Den ligger igjen i dev og bør ryddes bort der. |
+| Brukere, unntatt service accounts | Ingen personlige brukere i Git. Service accounts tas med for rolletildelingene. |
+| `identityProviders` og `identityProviderMappers` | Midlertidig. Se under. |
+| `localizationTexts` | Tomme i dev. |
 
-Kan ikke opprettes, bare oppdateres: de innebygde flowene `Browser - Conditional OTP` og
-`First broker login - Conditional OTP`. De finnes i dev fra en eldre Keycloak-versjon, men ikke i nye realms.
+Endret: flow-ID-er i `authenticationFlowBindingOverrides` byttes til alias, og user profile flyttes fra
+komponenten `kc.user.profile.config` til `userProfile`.
 
-Config-jobben er **nesten** no-op mot dev. Diff før og etter at jobben kjørte (`scripts/lokal-test.sh`):
+Diff mellom dev-eksporten og realmen etter config-jobben (`scripts/lokal-test.sh` + `diff.py`):
 
 | Endring | Konsekvens i dev | Status |
 |---|---|---|
-| `clientSecret` på IdP-ene (`idporten-test`, `kartverket`, `microsoft`) ble tom | Innlogging via ID-porten og Azure AD ville sluttet å virke. Eksporten maskerer secrets, og config-cli tømte feltet når det manglet. | **Løst midlertidig:** IdP-er og mappere er tatt ut av configen. Med `no-delete` står de urørt i Keycloak. Tas inn igjen med `${vault.x}` (GSM → ExternalSecret → fil i Keycloak-podden). |
-| Scopet `service_account` legges til klienter som har service account (4 stk.) | Keycloak 26 legger det til når klienten oppdateres. Tokenene får claimene `client_id`, `clientHost` og `clientAddress`, men de fire klientene har allerede de samme claimene som egne mappere, så tokenene blir like. | **Akseptert:** lagt til i `defaultClientScopes` i configen, slik at den stemmer med Keycloak. Endringen skjer i dev ved første kjøring. |
-| Ubrukt authenticator-config slettes | config-cli rydder bort ubrukte configer, også med `no-delete`. | Ufarlig. |
+| `clientSecret` på IdP-ene (`idporten-test`, `kartverket`, `microsoft`) ble tom | Innlogging via ID-porten og Azure AD ville sluttet å virke. Eksporten maskerer secrets, og config-cli tømmer feltet når det mangler. | **Midlertidig løst:** IdP-er og mappere er ikke med i configen. Med `no-delete` står de urørt. Tas inn med `${vault.x}` (GSM → ExternalSecret → fil i Keycloak-podden). |
+| Authenticator-configen `test-bajs` slettes | config-cli sletter ubrukte configer når `authenticationFlows` er med, også med `no-delete`. | Forventet og ufarlig (testrest). |
+| Scopet `service_account` legges til `c10136`, `jenkins`, `matrikkel-test-eksterne` og `releasetest` | Keycloak 26 legger det til ved enhver oppdatering av en klient med service account, også ved lagring i GUI. Tokenene får i tillegg claimen `client_id`. `clientHost` og `clientAddress` finnes fra før som egne mappere. | Configen følger eksporten (uten scopet). config-cli hopper over klienter som er uendret, så dev forventes uendret. Lokalt skjer det fordi Keycloaks egen import gir små avvik. Når klientene endres senere, kommer scopet uansett. |
 
 Klient-secrets beholdes. Eksporten maskerer dem, så diffen ser dem ikke. Derfor gir skriptet hver
-konfidensiell klient en unik secret før jobben, og sammenligner dem etterpå (steg 7). Klienter uten `secret`
+konfidensiell klient en unik secret før jobben, og sammenligner dem etterpå. Klienter uten `secret`
 i configen beholder secreten sin.
 
-Lokale avvik på `userinfo.token.claim` skyldes Keycloaks egen import og oppstår ikke i dev.
+Lokale avvik på `userinfo.token.claim`, `post.logout.redirect.uris`, `client.secret.creation.time` og
+`browserSecurityHeaders` skyldes Keycloaks egen import og oppstår ikke i dev. Sammenlign derfor eksporten fra
+miljøet med `local/etter.json`, ikke `local/for.json`:
 
+```bash
+PYTHONIOENCODING=utf-8 python realm-config/scripts/diff.py dev-etter.snapshot.json realm-config/local/etter.json
+```
+
+### Til vurdering før configen er ferdig vasket
+
+Repoet er offentlig. Eksporten inneholder ingen persondata eller secrets, men følgende bør vurderes:
+
+- **Interne vertsnavn** i redirect-URI-er og SMTP (`*.statkart.no`, interne cloud-URL-er). Ikke hemmelige, men
+  avslører intern infrastruktur.
+- **Azure tenant-ID og IdP-klient-ID-er.** Ikke hemmelige, men kan flyttes til miljøvariabler (`$(env:...)`).
+- **Testrester i dev:** klientene `taaosfjaof`, `testgruppe`, `jwt-test-client`, `person-api` (localhost),
+  flowene `Copy of registration`, `matrikkel-direct-grant-copy`, `matrikkel-browser-alt`. Bør slettes i dev og
+  fjernes fra configen, ikke tas med til prodtest og prod.
+- `webAuthnPolicyRpId: "admmatr"` ser feil ut.
+- Attributtet `loclae` (skrivefeil) på service-accounten til `matrikkel-test-eksterne`.
 ## Apply-klienten `matrikkel-keycloak-config`
 
 Config-jobben trenger en innlogging i Keycloak for å endre realmen via Admin REST API. Den bruker en egen
