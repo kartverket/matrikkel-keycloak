@@ -38,7 +38,8 @@ ENTRYPOINT ["java", "-jar", "/app/keycloak-config-cli.jar"]
 
 # CONFIG_ENV (dev), KEYCLOAK_URL og KEYCLOAK_CLIENTSECRET settes i SKIPJob.
 # ${CONFIG_ENV} løses av Spring ved oppstart; jobben feiler hvis den mangler.
-ENV IMPORT_FILES_LOCATIONS="file:/config/\${CONFIG_ENV}/*.json" \
+# resources/ før base/: realm-innstillingene må importeres sist (se README, «Filer per miljø»).
+ENV IMPORT_FILES_LOCATIONS="file:/config/\${CONFIG_ENV}/resources/*.json,file:/config/\${CONFIG_ENV}/base/*.json" \
     KEYCLOAK_LOGINREALM=master \
     KEYCLOAK_CLIENTID=matrikkel-keycloak-config \
     KEYCLOAK_GRANTTYPE=client_credentials \
